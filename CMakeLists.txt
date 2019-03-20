@@ -26,6 +26,7 @@ endif()
 set(UI
   GKAboutDialog.ui
   )
+
 set(SOURCES
   GKAboutDialog.cpp
   GKAboutDialog.h
@@ -42,11 +43,6 @@ add_executable(
   ${UI_HEADERS}
   )
 
-target_include_directories(
-  ${PROJECT_NAME}
-  PUBLIC
-  ${CMAKE_SOURCE_DIR}
-  )
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
