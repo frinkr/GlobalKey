@@ -58,3 +58,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Network)
 if (WIN32)
   target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::WinExtras Qt5::WinExtrasPrivate)
 endif()
+
+target_link_libraries(${PROJECT_NAME}  PRIVATE QHotkey::QHotkey)
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${CMAKE_SOURCE_DIR}/QHotKey/QHotKey
+  )
