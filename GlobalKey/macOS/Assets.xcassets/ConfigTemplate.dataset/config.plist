@@ -3,12 +3,8 @@
 <plist version="1.0">
 	<dict>
 		<key>F1</key>
-		<string>/Applications/Emacs.app</string>
+		<string>/Applications/Safari.app</string>
 		<key>F2</key>
-		<string>/Applications/iTerm.app</string>
-		<key>F3</key>
-		<string>/Applications/Google Chrome.app</string>
-		<key>F4</key>
-		<string>/Applications/Xcode-beta.app</string>
+		<string>com.apple.TextEdit</string>
 	</dict>
 </plist>

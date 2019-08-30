@@ -6,6 +6,6 @@
 
 const GKConfig &
 GKConfig::instance() {
-    static GKMacConfig config("/Volumes/git/my/GlobalKey/GlobalKey/config.plist");
+    static GKMacConfig config;
     return config;
 }

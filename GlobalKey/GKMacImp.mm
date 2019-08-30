@@ -188,10 +188,28 @@ GKMacAppFactory::getOrCreateApp(GKPtr<const GKAppId> appId) {
 //////////////////////////////////////////////////////////////////////////////////////////
 //                            GKMacConfig
 
-GKMacConfig::GKMacConfig(std::string file)
-: file_(std::move(file)) {
+GKMacConfig::GKMacConfig()
+{
     @autoreleasepool {
-        NSString * path = fromStdString(file_);
+        
+        NSArray * paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+        NSString * appDataFolder = [NSString pathWithComponents: [NSArray arrayWithObjects: paths.firstObject, @"GlobalKey", nil]];
+        
+        NSFileManager * fileManager= [NSFileManager defaultManager];
+        [fileManager createDirectoryAtPath:appDataFolder
+               withIntermediateDirectories:YES
+                                attributes:nil
+                                     error:nil];
+        
+        NSString * path = [NSString pathWithComponents: [NSArray arrayWithObjects: appDataFolder, @"Shortcuts.plist", nil]];
+        
+        file_ = toStdString(path);
+        
+        if (not [fileManager fileExistsAtPath:path]) {
+            NSDataAsset * templateData = [[NSDataAsset alloc] initWithName:@"ConfigTemplate"];
+            [templateData.data writeToFile:path atomically:YES];
+        }
+        
         NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile:path];
         
         [dict enumerateKeysAndObjectsUsingBlock:^(NSString * key, NSString *  obj, BOOL * stop) {

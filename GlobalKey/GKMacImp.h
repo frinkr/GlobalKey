@@ -73,7 +73,7 @@ private:
         std::string   bundlePath;
     };
 public:
-    explicit GKMacConfig(std::string file);
+    GKMacConfig();
 
     std::string
     path() const override;
