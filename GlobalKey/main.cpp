@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QProcess>
 #include <QDesktopServices>
 #include <QIcon>
 #include <QFileIconProvider>
@@ -78,7 +79,13 @@ int main(int argc, char *argv[]) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(cfg.path())));
     });
     
+    menu->addAction("Reload", []() {
+        qApp->quit();
+        QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+    });
+    
     menu->addSeparator();
+    
     menu->addAction("Quit", [&app]() {
         app.quit();
     });
