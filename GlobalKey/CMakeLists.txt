@@ -6,97 +6,114 @@ if(POLICY CMP0071)
   cmake_policy(SET CMP0071 NEW)
 endif()
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Network REQUIRED)
-
 if (WIN32)
-  find_package(Qt5WinExtras CONFIG REQUIRED)
-endif()
-
-set(UI
-  #GKAboutDialog.ui
-  #GKDialog.ui
-  #GKWidget.ui
-  #GKWidgetItem.ui
-  )
-
-set(SOURCES
-  GK.h
-  GK.cpp
-  GKMac.h
-  GKMac.mm
-  Resources/Resources.qrc
-  main.cpp
-  )
-
-qt5_wrap_ui(UI_HEADERS ${UI})
-
-if (APPLE)
-  set(
-    RESOURCE_FILES
-    macOS/Assets.xcassets
-    )
-  add_executable(
-    ${PROJECT_NAME}
-    MACOSX_BUNDLE
-    ${SOURCES}
-    ${UI}
-    ${UI_HEADERS}
-    ${RESOURCE_FILES}
-    )
-elseif(WIN32)
-  set(
-    RESOURCE_FILES
+  set(SOURCES
+    GK.h
+    GK.cpp
+    win32/App.cpp
     win32/Resource.h
     win32/Resource.rc
-    )
-  add_executable(
-    ${PROJECT_NAME}
-	WIN32
-    ${SOURCES}
-    ${UI}
-    ${UI_HEADERS}
-    
-    ${RESOURCE_FILES}
-    )
-
-  # Disable console in Release
-  #if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  #  set_property(TARGET main PROPERTY WIN32_EXECUTABLE true)
-  #endif()
-
-else()
-  add_executable(
-    ${PROJECT_NAME}
-    ${SOURCES}
-    ${UI}
-    ${UI_HEADERS}
-    )
-endif()
-
-
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Network)
-if (WIN32)
-  target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::WinExtras Qt5::WinExtrasPrivate)
-elseif(APPLE)
-  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit")
-endif()
-
-target_link_libraries(${PROJECT_NAME}  PRIVATE QHotkey::QHotkey)
-target_include_directories(${PROJECT_NAME} PUBLIC
-  ${CMAKE_SOURCE_DIR}/QHotKey/QHotKey
   )
 
+  add_executable(
+    ${PROJECT_NAME}
+    WIN32
+    ${SOURCES}
+  )
+else()
+
+  set(CMAKE_AUTOMOC ON)
+  set(CMAKE AUTOUIC ON)
+  set(CMAKE_AUTORCC ON)
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5Gui REQUIRED)
+  find_package(Qt5Widgets REQUIRED)
+  find_package(Qt5Network REQUIRED)
+
+  if (WIN32)
+    find_package(Qt5WinExtras CONFIG REQUIRED)
+  endif()
+
+  set(UI
+    #GKAboutDialog.ui
+    #GKDialog.ui
+    #GKWidget.ui
+    #GKWidgetItem.ui
+    )
+
+  set(SOURCES
+    GK.h
+    GK.cpp
+    GKMac.h
+    GKMac.mm
+    Resources/Resources.qrc
+    main.cpp
+    )
+
+  qt5_wrap_ui(UI_HEADERS ${UI})
+
+  if (APPLE)
+    set(
+      RESOURCE_FILES
+      macOS/Assets.xcassets
+      )
+    add_executable(
+      ${PROJECT_NAME}
+      MACOSX_BUNDLE
+      ${SOURCES}
+      ${UI}
+      ${UI_HEADERS}
+      ${RESOURCE_FILES}
+      )
+  elseif(WIN32)
+    set(
+      RESOURCE_FILES
+      win32/Resource.h
+      win32/Resource.rc
+      )
+    add_executable(
+      ${PROJECT_NAME}
+    WIN32
+      ${SOURCES}
+      ${UI}
+      ${UI_HEADERS}
+      
+      ${RESOURCE_FILES}
+      )
+
+    # Disable console in Release
+    #if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    #  set_property(TARGET main PROPERTY WIN32_EXECUTABLE true)
+    #endif()
+
+  else()
+    add_executable(
+      ${PROJECT_NAME}
+      ${SOURCES}
+      ${UI}
+      ${UI_HEADERS}
+      )
+  endif()
+
+
+  target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
+  target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui)
+  target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
+  target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Network)
+  if (WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::WinExtras Qt5::WinExtrasPrivate)
+  elseif(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit")
+  endif()
+
+  target_link_libraries(${PROJECT_NAME}  PRIVATE QHotkey::QHotkey)
+  target_include_directories(${PROJECT_NAME} PUBLIC
+    ${CMAKE_SOURCE_DIR}/QHotKey/QHotKey
+    )
+
+endif()
 
 
 ########################### Mac Bundle #####################

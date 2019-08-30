@@ -4,6 +4,7 @@
 #  include "GKMac.h"
 #endif
 
+#if GK_MAC
 const GKConfig &
 GKConfig::instance() {
     static GKMacConfig config;
@@ -22,3 +23,4 @@ GKSystem::instance() {
     static GKMacSystem sys;
     return sys;
 }
+#endif

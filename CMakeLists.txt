@@ -10,5 +10,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 # Subdirectories
+if (APPLE)
 add_subdirectory(QHotKey)
+endif()
 add_subdirectory(GlobalKey)
