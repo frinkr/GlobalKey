@@ -13,16 +13,20 @@
 
 #include "QHotkey"
 
-#include "GKAppFactory.h"
-#include "GKConfig.h"
-#include "GKSystemTray.h"
+#include "GK.h"
 
 #define gkLog qDebug
+
+template <typename ...T>
+static void postNotification(T... messages) {
+    std::string msg = (std::string() + ... + messages);
+    GKSystem::instance().postNotification("GlobalKey", msg);
+}
 
 static void toggleApp(GKPtr<GKApp> app) {
     if (!app->running()) {
         if (GKErr::noErr != app->launch()) {
-            gkLog() << "Failed to launch application " << QString::fromStdString(app->id().description());
+            postNotification("Failed to launch application ", app->id().description());
             return;
         }
     }
@@ -49,7 +53,7 @@ int main(int argc, char *argv[]) {
             if (auto app = GKAppFactory::instance().getOrCreateApp(appId)) 
                 toggleApp(app);
             else
-                gkLog() << "Not able to find application " << QString::fromStdString(appId->description());
+                postNotification("Not able to find application ", appId->description());
         });
         hotKeys.push_back(hotKey);
     }

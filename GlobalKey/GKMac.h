@@ -2,8 +2,7 @@
 
 #include <vector>
 
-#include "GKConfig.h"
-#include "GKAppFactory.h"
+#include "GK.h"
 
 class GKMacAppId : public GKAppId{
 public:
@@ -91,4 +90,11 @@ private:
     std::string file_;
 
     std::vector<Entry> entries_;
+};
+
+
+class GKMacSystem : public GKSystem {
+public:
+    void
+    postNotification(const std::string & title, const std::string & message) override;
 };

@@ -88,3 +88,48 @@ public:
     virtual GKErr
     launch() = 0;
 };
+
+class GKAppFactory {
+public:
+    static GKAppFactory &
+    instance();
+
+    virtual ~GKAppFactory() {};
+    
+    virtual GKPtr<GKApp>
+    getOrCreateApp(GKPtr<const GKAppId> appId) = 0;
+};
+
+
+class GKConfig {
+public:
+    virtual ~GKConfig() {}
+
+    virtual std::string
+    path() const = 0;
+
+    virtual size_t
+    appCount() const = 0;
+
+    virtual std::string
+    appKeySequence(size_t index) const = 0;
+    
+    virtual GKPtr<const GKAppId>
+    appId(size_t index) const = 0;
+
+    static const GKConfig &
+    instance();
+};
+
+
+class GKSystem {
+public:
+
+    static GKSystem &
+    instance();
+
+    virtual ~GKSystem() {}
+
+    virtual void
+    postNotification(const std::string & title, const std::string & message) = 0;
+};

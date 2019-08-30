@@ -28,13 +28,10 @@ set(UI
   )
 
 set(SOURCES
-  GKApp.h
-  GKAppFactory.h
-  GKAppFactory.cpp
-  GKConfig.h
-  GKConfig.cpp
-  GKMacImp.h
-  GKMacImp.mm
+  GK.h
+  GK.cpp
+  GKMac.h
+  GKMac.mm
   Resources/Resources.qrc
   main.cpp
   )

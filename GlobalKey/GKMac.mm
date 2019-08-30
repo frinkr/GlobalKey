@@ -3,7 +3,7 @@
 #include <array>
 #include <string_view>
 #include <stdexcept>
-#include "GKMacImp.h"
+#include "GKMac.h"
 
 namespace {
     void throwBadObjectType() {
@@ -250,4 +250,18 @@ GKMacConfig::appKeySequence(size_t index) const {
 GKPtr<const GKAppId>
 GKMacConfig::appId(size_t index) const {
     return std::make_shared<GKMacAppId>(entries_[index].bundlePath);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//                            GKMacSystem
+
+void
+GKMacSystem::postNotification(const std::string & title, const std::string & message) {
+    @autoreleasepool {
+        NSUserNotification * notification = [[NSUserNotification alloc] init];
+        notification.title = fromStdString(title);
+        notification.informativeText = fromStdString(message);
+        notification.soundName = NSUserNotificationDefaultSoundName;
+        [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
+    }
 }
