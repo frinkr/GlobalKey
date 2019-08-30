@@ -20,8 +20,12 @@
 #define gkLog qDebug
 
 static void toggleApp(GKPtr<GKApp> app) {
-    if (!app->running())
-        app->launch();
+    if (!app->running()) {
+        if (GKErr::noErr != app->launch()) {
+            gkLog() << "Failed to launch application " << QString::fromStdString(app->id().description());
+            return;
+        }
+    }
                 
     if (app->atFrontmost()) 
         app->hide();

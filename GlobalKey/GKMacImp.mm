@@ -49,28 +49,33 @@ public:
     : parent_(parent) {}
     
     NSRunningApplication *
-    runningAppOld() const {
-        // Search the running app by bundle path
+    runningApp() const {
         NSString * path = fromStdString(parent_->id().path());
+        
+        NSString * bundleIdentifier = nil;
+        NSBundle * bundle = [NSBundle bundleWithPath:path];
+        if (bundle)
+            bundleIdentifier = [bundle bundleIdentifier];
+        else
+            bundleIdentifier = path;
+        
+        // Search bundle
+        if (bundleIdentifier) {
+            NSArray<NSRunningApplication *> * running = [NSRunningApplication runningApplicationsWithBundleIdentifier:bundleIdentifier];
+            if ([running count])
+                return [running objectAtIndex:0];
+        }
+        
+        
+        // Not a bundle, search by executable path
         NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
         NSArray<NSRunningApplication *> * runningApps = [workspace runningApplications];
         for (NSUInteger i = 0; i < [runningApps count]; ++ i) {
             NSRunningApplication * app = [runningApps objectAtIndex:i];
-            if ([app.bundleURL.path isEqualToString:path])
+            if ([app.executableURL.path isEqualToString:path])
                 return app;
         }
         return nil;
-    }
-    
-    NSRunningApplication *
-    runningApp() const {
-        NSString * path = fromStdString(parent_->id().path());
-        NSBundle * bundle = [NSBundle bundleWithPath:path];
-        NSArray<NSRunningApplication *> * running = [NSRunningApplication runningApplicationsWithBundleIdentifier:[bundle bundleIdentifier]];
-        if ([running count])
-            return [running objectAtIndex:0];
-        else
-            return nil;
     }
     
     static NSRunningApplication *
@@ -162,7 +167,13 @@ GKErr
 GKMacApp::launch() {
     @autoreleasepool {
         NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
-        BOOL ok = [workspace launchApplication:fromStdString(id_.path())];
+        
+        NSString * path = fromStdString(id_.path());
+        NSURL * url = [workspace URLForApplicationWithBundleIdentifier:path];
+        if (!url)
+            url = [NSURL fileURLWithPath:path];
+        
+        BOOL ok = [workspace openURL:url];
         return ok? GKErr::noErr: GKErr::appCantLaunch;
     }
 }
