@@ -28,6 +28,8 @@ static void toggleApp(GKPtr<GKApp> app) {
 }
 
 int main(int argc, char *argv[]) {
+    Q_INIT_RESOURCE(GKResources);
+    
     QApplication app(argc, argv);
     auto & cfg = GKConfig::instance();
 
@@ -47,13 +49,13 @@ int main(int argc, char *argv[]) {
     }
 
     // Create system tray
-    auto trayIconEnabled = QFileIconProvider().icon(QFileIconProvider::Computer);
-    auto trayIconDisabled = QFileIconProvider().icon(QFileIconProvider::Trashcan);
+    QIcon trayIconEnabled(":/Resoruces/SON.png");
+    QIcon trayIconDisabled(":/Resoruces/SOFF.png");
     auto tray = new QSystemTrayIcon(trayIconEnabled, &app);
     auto menu = new QMenu();
     
     QAction * disableAction;
-    disableAction = menu->addAction("Disable Shortcuts", [trayIconEnabled, trayIconDisabled, tray, &disableAction, &hotKeys]() {
+    disableAction = menu->addAction("Disable", [trayIconEnabled, trayIconDisabled, tray, &disableAction, &hotKeys]() {
         if (hotKeys.empty())
             return;
         QHotkey * key = hotKeys.front();
@@ -62,11 +64,11 @@ int main(int argc, char *argv[]) {
             key->setRegistered(!state);
         
         if (state) {
-            disableAction->setText("Enable Shortcuts");
+            disableAction->setText("Enable");
             tray->setIcon(trayIconDisabled);
         }
         else {
-            disableAction->setText("Disable Shortcuts");
+            disableAction->setText("Disable");
             tray->setIcon(trayIconEnabled);
         }
     });

@@ -34,19 +34,57 @@ set(SOURCES
   GKAppFactory.cpp
   GKConfig.h
   GKConfig.cpp
-  GKLog.cpp
   GKMacImp.h
   GKMacImp.mm
+  GKResources.qrc
   main.cpp
   )
 
 qt5_wrap_ui(UI_HEADERS ${UI})
-add_executable(
-  ${PROJECT_NAME}
-  ${SOURCES}
-  ${UI}
-  ${UI_HEADERS}
-  )
+
+if (APPLE)
+  set(
+    RESOURCE_FILES
+    macOS/Assets.xcassets
+    )
+  add_executable(
+    ${PROJECT_NAME}
+    MACOSX_BUNDLE
+    ${SOURCES}
+    ${UI}
+    ${UI_HEADERS}
+    ${RESOURCE_FILES}
+    )
+elseif(WIN32)
+  set(
+    RESOURCE_FILES
+    win32/Resource.h
+    win32/Resource.rc
+    )
+  add_executable(
+    ${PROJECT_NAME}
+	WIN32
+    ${SOURCES}
+    ${UI}
+    ${UI_HEADERS}
+    
+    ${RESOURCE_FILES}
+    )
+
+  # Disable console in Release
+  #if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  #  set_property(TARGET main PROPERTY WIN32_EXECUTABLE true)
+  #endif()
+
+else()
+  add_executable(
+    ${PROJECT_NAME}
+    ${SOURCES}
+    ${UI}
+    ${UI_HEADERS}
+    )
+endif()
+
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui)
@@ -63,3 +101,42 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}/QHotKey/QHotKey
   )
 
+
+
+########################### Mac Bundle #####################
+
+if (APPLE)
+  
+  set(APP_VERSION "1.0.0" CACHE STRING "The version of the application")
+  set(APP_NAME ${PROJECT_NAME})
+
+  set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES
+    MACOSX_BUNDLE YES
+
+    # bundle config
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/macOS/plist.in
+    MACOSX_BUNDLE_ICON_FILE "AppIcon"
+    MACOSX_BUNDLE_BUNDLE_VERSION ${APP_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${APP_VERSION}
+    MACOSX_BUNDLE_LONG_VERSION_STRING ${APP_VERSION}
+    MACOSX_BUNDLE_COPYRIGHT "Copyright © 2018 Yuqing Jiang. All rights reserved."
+    
+    XCODE_ATTRIBUTE_PRODUCT_NAME   ${APP_NAME}
+    XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER   "me.frinkr.globalkey"
+    XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
+    XCODE_ATTRIBUTE_INSTALL_PATH "${CMAKE_BINARY_DIR}/ProductRelease"
+    XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon"
+    XCODE_ATTRIBUTE_COMBINE_HIDPI_IMAGES "NO"
+
+    XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET "10.11"
+    
+    RESOURCE "${RESOURCE_FILES}"    
+    )
+
+#  ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}
+#    POST_BUILD
+#    COMMAND /bin/bash ${CMAKE_CURRENT_SOURCE_DIR}/CopyLibs.sh "${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
+#  )
+endif()
