@@ -49,7 +49,7 @@ public:
     : parent_(parent) {}
     
     NSRunningApplication *
-    runningApp() const {
+    runningAppOld() const {
         // Search the running app by bundle path
         NSString * path = fromStdString(parent_->id().path());
         NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
@@ -63,7 +63,7 @@ public:
     }
     
     NSRunningApplication *
-    runningApp2() const {
+    runningApp() const {
         NSString * path = fromStdString(parent_->id().path());
         NSBundle * bundle = [NSBundle bundleWithPath:path];
         NSArray<NSRunningApplication *> * running = [NSRunningApplication runningApplicationsWithBundleIdentifier:[bundle bundleIdentifier]];
@@ -97,7 +97,7 @@ GKMacApp::id() const {
 GKErr
 GKMacApp::bringFront() {
     @autoreleasepool {
-        NSRunningApplication * app = imp_->runningApp2();
+        NSRunningApplication * app = imp_->runningApp();
         if (!app)
             return GKErr::appCantFound;
         
@@ -203,6 +203,11 @@ GKMacConfig::GKMacConfig(std::string file)
             entries_.push_back(e);
         }
     }
+}
+
+std::string
+GKMacConfig::path() const {
+    return file_;
 }
 
 size_t

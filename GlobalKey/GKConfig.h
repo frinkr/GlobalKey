@@ -6,6 +6,9 @@ class GKConfig {
 public:
     virtual ~GKConfig() {}
 
+    virtual std::string
+    path() const = 0;
+
     virtual size_t
     appCount() const = 0;
 

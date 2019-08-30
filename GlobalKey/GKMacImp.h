@@ -75,6 +75,9 @@ private:
 public:
     explicit GKMacConfig(std::string file);
 
+    std::string
+    path() const override;
+    
     size_t
     appCount() const override;
 

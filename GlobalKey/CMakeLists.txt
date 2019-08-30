@@ -34,6 +34,7 @@ set(SOURCES
   GKAppFactory.cpp
   GKConfig.h
   GKConfig.cpp
+  GKLog.cpp
   GKMacImp.h
   GKMacImp.mm
   main.cpp
