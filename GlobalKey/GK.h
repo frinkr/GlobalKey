@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -16,13 +17,7 @@
 template <typename T>
 using GKPtr = std::shared_ptr<T>;
 
-class GKAppId {
-public:
-    virtual ~GKAppId() {};
-    
-    virtual std::string
-    description() const = 0;
-};
+using GKHandler = std::function<void()>;
 
 enum class GKErr : unsigned char{
     noErr             = 0,
@@ -33,6 +28,15 @@ enum class GKErr : unsigned char{
     
     notImplemented    = 99,
 };
+
+class GKAppId {
+public:
+    virtual ~GKAppId() {};
+    
+    virtual std::string
+    description() const = 0;
+};
+
 
 class GKApp {
 public:
@@ -100,6 +104,39 @@ public:
     getOrCreateApp(GKPtr<const GKAppId> appId) = 0;
 };
 
+class GKHotKey {
+public:
+    explicit GKHotKey(std::string keySequence)
+    : keySequence_(std::move(keySequence)) {}
+
+    virtual ~GKHotKey() {}
+
+    virtual void
+    registerHotKey() = 0;
+
+    virtual void
+    unregisterHotKey() = 0;
+
+    virtual void
+    invoke() {
+        if (handler_)
+            handler_();
+    }
+
+    void
+    setHandler(GKHandler handler) {
+        handler_ = handler;
+    }
+
+    const GKHandler &
+    handler() const {
+        return handler_;
+    }
+
+protected:
+    GKHandler handler_;
+    std::string keySequence_;
+};
 
 class GKConfig {
 public:
@@ -121,7 +158,6 @@ public:
     instance();
 };
 
-
 class GKSystem {
 public:
 
@@ -132,4 +168,20 @@ public:
 
     virtual void
     postNotification(const std::string & title, const std::string & message) = 0;
+
+    void
+    toggleApp(size_t appIndex) {
+        auto appId = GKConfig::instance().appId(appIndex);
+        auto app = GKAppFactory::instance().getOrCreateApp(appId);
+        if (!app->running()) 
+            if (GKErr::noErr != app->launch()) {
+                postNotification("GlobalKey", "Failed to launch application " + appId->description());
+                return;
+            }
+        if (app->atFrontmost())
+            app->hide();
+        else
+            app->bringFront();    
+    }
+
 };

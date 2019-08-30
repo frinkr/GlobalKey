@@ -7,6 +7,8 @@
 #include "Resource.h"
 #include <iostream>
 #include <string>
+#include "..\GK.h"
+#include "..\GKWin.h"
 // Libs
 #pragma comment(lib, "comctl32.lib")
 
@@ -29,35 +31,34 @@ struct WinNativeHotKey {
     }
 };
 
-std::vector<WinNativeHotKey> hotKeys = {
-        {MOD_NOREPEAT, VK_F1},
-        {MOD_NOREPEAT, VK_F2},
-        {MOD_NOREPEAT, VK_F3},
-};
+std::vector<GKWinHotKey> hotKeys;
 
+void LoadHotKeys() {
+    for (size_t i = 0; i < GKConfig::instance().appCount(); ++i) {
+        GKWinHotKey hotKey(hWnd, GKConfig::instance().appKeySequence(i));
+        hotKey.setHandler([i]() {GKSystem::instance().toggleApp(i);});
+        hotKeys.push_back(hotKey);
+    }
+}
 BOOL RegisterHotKeys()
 {
-    for (auto& key : hotKeys) {
-        RegisterHotKey(hWnd, key.GetId(), key.modifiers, key.virtualKey);
-    }
+    for (auto& key : hotKeys) 
+        key.registerHotKey();
+    
     return TRUE;
 }
 
 BOOL UnRegisterHotKeys()
 {
     for (auto& key : hotKeys)
-        UnregisterHotKey(hWnd, key.GetId());
+        key.unregisterHotKey();
     return TRUE;
 }
 
 BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
     for (auto& key : hotKeys) {
-        if (key.GetId() == wParam) {
-            unsigned short vk = lParam >> 16;
-            char message[128];
-            sprintf(message, "HotKey %X", vk);
-
-            MessageBox(NULL, message, "HotKey", MB_OK);
+        if (key.id() == wParam) {
+            key.invoke();
         }
     }
     return TRUE;
@@ -246,7 +247,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Set mode to enabled
     bEnabled = TRUE;
-
+    LoadHotKeys();
     RegisterHotKeys();
 
     // Message Loop

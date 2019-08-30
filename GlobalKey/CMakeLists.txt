@@ -10,6 +10,8 @@ if (WIN32)
   set(SOURCES
     GK.h
     GK.cpp
+    GKWin.h
+    GKWin.cpp
     win32/App.cpp
     win32/Resource.h
     win32/Resource.rc
