@@ -21,25 +21,21 @@ if (WIN32)
 endif()
 
 set(UI
-  GKAboutDialog.ui
-  GKDialog.ui
-  GKWidget.ui
-  GKWidgetItem.ui
+  #GKAboutDialog.ui
+  #GKDialog.ui
+  #GKWidget.ui
+  #GKWidgetItem.ui
   )
 
 set(SOURCES
-  GKAboutDialog.cpp
-  GKAboutDialog.h
-  GKApplication.cpp
-  GKApplication.h
-  GKDialog.cpp
-  GKDialog.h
-  GKItem.cpp
-  GKItem.h
-  GKWidget.cpp
-  GKWidget.h
-  GKWidgetItem.cpp
-  GKWidgetItem.h
+  GKApp.h
+  GKApp.cpp
+  GKAppFactory.h
+  GKAppFactory.cpp
+  GKConfig.h
+  GKConfig.cpp
+  GKMacImp.h
+  GKMacImp.mm
   main.cpp
   )
 
@@ -57,9 +53,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Network)
 if (WIN32)
   target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::WinExtras Qt5::WinExtrasPrivate)
+elseif(APPLE)
+  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit")
 endif()
 
 target_link_libraries(${PROJECT_NAME}  PRIVATE QHotkey::QHotkey)
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}/QHotKey/QHotKey
   )
+

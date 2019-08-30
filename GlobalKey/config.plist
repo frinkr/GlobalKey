@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>apps</key>
+	<array>
+		<dict>
+			<key>key</key>
+			<string>F1</string>
+			<key>app</key>
+			<string>/Applications/Emacs.app</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>F2</string>
+			<key>app</key>
+			<string>/Applications/iTerm.app</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>F3</string>
+			<key>app</key>
+			<string>/Applications/Google Chrome.app</string>
+		</dict>
+		<dict>
+			<key>key</key>
+			<string>F4</string>
+			<key>app</key>
+			<string>/Applications/Xcode-beta.app</string>
+		</dict>
+	</array>
+</dict>
+</plist>
