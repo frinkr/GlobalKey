@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>SOFF.png</file>
+        <file>SON.png</file>
+    </qresource>
+</RCC>

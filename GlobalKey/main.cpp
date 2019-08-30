@@ -14,8 +14,9 @@
 
 #include "GKAppFactory.h"
 #include "GKConfig.h"
-#include "GKLog.h"
 #include "GKSystemTray.h"
+
+#define gkLog qDebug
 
 static void toggleApp(GKPtr<GKApp> app) {
     if (!app->running())
@@ -28,7 +29,7 @@ static void toggleApp(GKPtr<GKApp> app) {
 }
 
 int main(int argc, char *argv[]) {
-    Q_INIT_RESOURCE(GKResources);
+    Q_INIT_RESOURCE(Resources);
     
     QApplication app(argc, argv);
     auto & cfg = GKConfig::instance();
@@ -49,8 +50,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Create system tray
-    QIcon trayIconEnabled(":/Resoruces/SON.png");
-    QIcon trayIconDisabled(":/Resoruces/SOFF.png");
+    QIcon trayIconEnabled(":/SON.png");
+    QIcon trayIconDisabled(":/SOFF.png");
     auto tray = new QSystemTrayIcon(trayIconEnabled, &app);
     auto menu = new QMenu();
     
@@ -73,7 +74,7 @@ int main(int argc, char *argv[]) {
         }
     });
     
-    menu->addAction("Edit Shortcuts", [&app, &cfg]() {
+    menu->addAction("Edit Shortcuts", [&cfg]() {
         QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(cfg.path())));
     });
     
