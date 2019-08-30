@@ -193,15 +193,13 @@ GKMacConfig::GKMacConfig(std::string file)
     @autoreleasepool {
         NSString * path = fromStdString(file_);
         NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile:path];
-        NSArray * apps = [dict objectForKey:@"apps"];
-        for (NSUInteger i = 0; i < apps.count; ++ i) {
-            NSDictionary * appDict = [apps objectAtIndex:i];
-            
+        
+        [dict enumerateKeysAndObjectsUsingBlock:^(NSString * key, NSString *  obj, BOOL * stop) {
             Entry e;
-            e.keySequence = toStdString([appDict objectForKey:@"key"]);
-            e.bundlePath = toStdString([appDict objectForKey:@"app"]);
+            e.keySequence = toStdString(key);
+            e.bundlePath = toStdString(obj);
             entries_.push_back(e);
-        }
+        }];
     }
 }
 
