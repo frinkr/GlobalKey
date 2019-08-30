@@ -62,6 +62,17 @@ public:
         return nil;
     }
     
+    NSRunningApplication *
+    runningApp2() const {
+        NSString * path = fromStdString(parent_->id().path());
+        NSBundle * bundle = [NSBundle bundleWithPath:path];
+        NSArray<NSRunningApplication *> * running = [NSRunningApplication runningApplicationsWithBundleIdentifier:[bundle bundleIdentifier]];
+        if ([running count])
+            return [running objectAtIndex:0];
+        else
+            return nil;
+    }
+    
     static NSRunningApplication *
     frontmostApp() {
         NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
@@ -85,26 +96,17 @@ GKMacApp::id() const {
 
 GKErr
 GKMacApp::bringFront() {
-    GKErr err = launch();
-    
-    if (!atFrontmost())
-    {
-        NSLog(@"Not at front");
-    }
-    return err;
-    
-#if 0
     @autoreleasepool {
-        NSRunningApplication * app = imp_->runningApp();
+        NSRunningApplication * app = imp_->runningApp2();
         if (!app)
             return GKErr::appCantFound;
         
-        if ([app activateWithOptions:NSApplicationActivateAllWindows])
+        // NSApplicationActivateAllWindows not work for Emacs.app on 10.15 Beta (19A546d)
+        if ([app activateWithOptions:NSApplicationActivateIgnoringOtherApps])
             return GKErr::noErr;
         else
             return GKErr::appCantActivate;
     }
-#endif
 }
 
 GKErr
@@ -160,9 +162,7 @@ GKErr
 GKMacApp::launch() {
     @autoreleasepool {
         NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
-        NSURL * url = [NSURL fileURLWithPath:fromStdString(id_.path())];
-        BOOL ok = [workspace openURL:url];
-        //BOOL ok = [workspace launchApplication:fromStdString(id_.path())];
+        BOOL ok = [workspace launchApplication:fromStdString(id_.path())];
         return ok? GKErr::noErr: GKErr::appCantLaunch;
     }
 }
