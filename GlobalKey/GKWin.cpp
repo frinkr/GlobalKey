@@ -2,9 +2,57 @@
 #include <Windows.h>
 #include "GKWin.h"
 
+struct GKWinApp::Imp {
+    
+};
+
+GKWinApp::GKWinApp(const GKAppDescriptor & descriptor)
+    : GKApp(descriptor)
+    , imp_(std::make_unique<Imp>())
+{}
+
+GKWinApp::~GKWinApp() {
+    
+}
+
+GKErr
+GKWinApp::bringFront() {
+    return GKErr::notImplemented;
+}
+
+GKErr
+GKWinApp::show() {
+    return GKErr::notImplemented;
+}
+
+GKErr
+GKWinApp::hide() {
+    return GKErr::notImplemented;
+}
+
+bool
+GKWinApp::visible() const {
+    return false;
+}
+
+bool
+GKWinApp::atFrontmost() const {
+    return false;
+}
+
+bool
+GKWinApp::running() const {
+    return false;
+}
+
+GKErr
+GKWinApp::launch() {
+    return GKErr::notImplemented;
+}
+
 GKPtr<GKApp>
 GKWinAppFactory::getOrCreateApp(const GKAppDescriptor & appDescriptor) {
-    return GKPtr<GKApp>();
+    return std::make_shared<GKWinApp>(appDescriptor);
 }
 
 GKWinHotKey::GKWinHotKey(HWND hwnd, const GKKeySequence & keySequence)

@@ -13,6 +13,46 @@ using GKSystemImp = GKWinSystem;
 using GKHotKeyManagerImp = GKWinHotKeyManager;
 #endif
 
+namespace {
+    class GKToggleAppTask {
+    public:
+        explicit GKToggleAppTask(size_t appIndex)
+            : appIndex_(appIndex) {}
+
+        void
+        operator()() {
+            auto appDescriptor = GKConfig::instance().appDescriptor(appIndex_);
+            auto app = GKAppFactory::instance().getOrCreateApp(appDescriptor);
+            if (!app) {
+                GKSystem::instance().postNotification("GlobalKey", "Failed to find application " + appDescriptor);
+                return;
+            }
+
+            if (!app->running()) 
+                if (GKErr::noErr != app->launch()) {
+                    GKSystem::instance().postNotification("GlobalKey", "Failed to launch application " + appDescriptor);
+                    return;
+                }
+            if (app->atFrontmost())
+                app->hide();
+            else
+                app->bringFront();    
+        }
+
+    private:
+        size_t appIndex_;
+    };
+}
+
+GKApp::GKApp(const GKAppDescriptor & descriptor)
+    : descriptor_(descriptor) {
+}
+
+const GKAppDescriptor &
+GKApp::descriptor() const {
+    return descriptor_;
+}
+
 
 GKAppFactory & GKAppFactory::instance() {
     static GKAppFactoryImp appSwitch;
@@ -69,7 +109,8 @@ GKHotKeyManager::loadHotKeys() {
     for (size_t i = 0; i < GKConfig::instance().appCount(); ++i) {
         GKPtr<GKHotKey> hotKey = createHotKey(GKConfig::instance().appKeySequence(i));
         hotKey->setHandler([i]() {
-            GKHelper::toggleApp(i);
+            GKToggleAppTask task(i);
+            task();
         });
         hotKeys_.push_back(hotKey);
     }     
@@ -90,25 +131,4 @@ GKHotKeyManager::unregisterHotKeys() {
 const std::vector<GKPtr<GKHotKey>> &
 GKHotKeyManager::hotKeys() const {
     return hotKeys_;
-}
-
-
-void
-GKHelper::toggleApp(size_t appIndex) {
-    auto appDescriptor = GKConfig::instance().appDescriptor(appIndex);
-    auto app = GKAppFactory::instance().getOrCreateApp(appDescriptor);
-    if (!app) {
-        GKSystem::instance().postNotification("GlobalKey", "Failed to find application " + appDescriptor);
-        return;
-    }
-
-    if (!app->running()) 
-        if (GKErr::noErr != app->launch()) {
-            GKSystem::instance().postNotification("GlobalKey", "Failed to launch application " + appDescriptor);
-            return;
-        }
-    if (app->atFrontmost())
-        app->hide();
-    else
-        app->bringFront();    
 }

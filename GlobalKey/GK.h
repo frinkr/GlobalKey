@@ -32,20 +32,10 @@ enum class GKErr : unsigned char{
     notImplemented    = 99,
 };
 
-class GKAppId {
-public:
-
-    virtual ~GKAppId() {};
-    
-    virtual std::string
-    descriptor() const = 0;
-
-protected:
-};
-
-
 class GKApp {
 public:
+    explicit GKApp(const GKAppDescriptor & descriptor);
+
     virtual
     ~GKApp() {};
 
@@ -53,7 +43,7 @@ public:
      * The application identifier
      */
     virtual const GKAppDescriptor &
-    descriptor() const = 0;
+    descriptor() const;
 
     /**
      * Bring the application front
@@ -97,6 +87,9 @@ public:
      */
     virtual GKErr
     launch() = 0;
+
+protected:
+    GKAppDescriptor descriptor_ {};
 };
 
 class GKAppFactory {
@@ -116,9 +109,6 @@ public:
     : keySequence_(std::move(keySequence)) {}
 
     virtual ~GKHotKey() {}
-
-    virtual int
-    id() const = 0;
 
     virtual void
     registerHotKey() = 0;
@@ -219,11 +209,4 @@ public:
 
     virtual void
     postNotification(const std::string & title, const std::string & message) = 0;
-};
-
-
-class GKHelper {
-public:
-    static void
-    toggleApp(size_t appIndex);
 };

@@ -45,7 +45,7 @@ BOOL UnRegisterHotKeys()
 BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
     const auto & hotKeys = GKHotKeyManager::instance().hotKeys();
     for (auto & key : hotKeys) {
-        if (key->id() == wParam) {
+        if (std::dynamic_pointer_cast<GKWinHotKey>(key)->id() == wParam) {
             key->invoke();
         }
     }

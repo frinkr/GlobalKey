@@ -3,6 +3,38 @@
 #include <Windows.h>
 #include "GK.h"
 
+class GKWinApp : public GKApp {
+public:
+    explicit GKWinApp(const GKAppDescriptor & descriptor);
+
+    ~GKWinApp();
+    
+    GKErr
+    bringFront() override;
+
+    GKErr
+    show() override;
+
+    GKErr
+    hide() override;
+
+    bool
+    visible() const override;
+
+    bool
+    atFrontmost() const override;
+
+    bool
+    running() const override;
+
+    GKErr
+    launch() override;
+
+private:
+    struct Imp;
+    std::unique_ptr<Imp> imp_;
+};
+
 
 class GKWinAppFactory : public GKAppFactory {
 public:
@@ -21,7 +53,7 @@ public:
     unregisterHotKey() override;
 
     int 
-    id() const override;
+    id() const;
 private:
     HWND hwnd_{};
     int modifiers_{};
