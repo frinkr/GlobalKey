@@ -11,6 +11,6 @@ endif()
 
 # Subdirectories
 if (APPLE)
-add_subdirectory(QHotKey)
+  add_subdirectory(QHotKey)
 endif()
 add_subdirectory(GlobalKey)

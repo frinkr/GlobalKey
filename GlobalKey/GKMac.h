@@ -13,7 +13,7 @@ public:
     path() const;
 
     std::string
-    description() const override;
+    descriptor() const override;
 
 private:
     std::string path_;

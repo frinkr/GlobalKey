@@ -22,43 +22,31 @@ HINSTANCE hInst;
 NOTIFYICONDATA structNID;
 BOOL bEnabled;
 
-struct WinNativeHotKey {
-    UINT modifiers;
-    UINT virtualKey;
-
-    int GetId() const {
-        return (modifiers << 16) + virtualKey;
-    }
-};
 
 std::vector<GKWinHotKey> hotKeys;
 
 void LoadHotKeys() {
-    for (size_t i = 0; i < GKConfig::instance().appCount(); ++i) {
-        GKWinHotKey hotKey(hWnd, GKConfig::instance().appKeySequence(i));
-        hotKey.setHandler([i]() {GKSystem::instance().toggleApp(i);});
-        hotKeys.push_back(hotKey);
-    }
+    GKWinHotKeyManager & mgr = dynamic_cast<GKWinHotKeyManager &>(GKHotKeyManager::instance());
+    mgr.setHWND(hWnd);
+    mgr.loadHotKeys();
 }
 BOOL RegisterHotKeys()
 {
-    for (auto& key : hotKeys) 
-        key.registerHotKey();
-    
+    GKHotKeyManager::instance().registerHotKeys();
     return TRUE;
 }
 
 BOOL UnRegisterHotKeys()
 {
-    for (auto& key : hotKeys)
-        key.unregisterHotKey();
+    GKHotKeyManager::instance().unregisterHotKeys();
     return TRUE;
 }
 
 BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
-    for (auto& key : hotKeys) {
-        if (key.id() == wParam) {
-            key.invoke();
+    const auto & hotKeys = GKHotKeyManager::instance().hotKeys();
+    for (auto & key : hotKeys) {
+        if (key->id() == wParam) {
+            key->invoke();
         }
     }
     return TRUE;
@@ -66,8 +54,8 @@ BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
 /* ================================================================================================================== */
 
 /*
-Name: ... WndProc(...)
-Desc: Main hidden "Window" that handles the messaging for our system tray
+  Name: ... WndProc(...)
+  Desc: Main hidden "Window" that handles the messaging for our system tray
 */
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
@@ -161,8 +149,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 }
 
 /*
-Name: ... WinMain(...)
-Desc: Main Entry point
+  Name: ... WinMain(...)
+  Desc: Main Entry point
 */
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {

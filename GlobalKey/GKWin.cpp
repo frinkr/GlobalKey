@@ -2,7 +2,12 @@
 #include <Windows.h>
 #include "GKWin.h"
 
-GKWinHotKey::GKWinHotKey(HWND hwnd, const std::string & keySequence)
+GKPtr<GKApp>
+GKWinAppFactory::getOrCreateApp(const GKAppDescriptor & appDescriptor) {
+    return GKPtr<GKApp>();
+}
+
+GKWinHotKey::GKWinHotKey(HWND hwnd, const GKKeySequence & keySequence)
     : GKHotKey(keySequence)
     , hwnd_(hwnd)
 {
@@ -31,4 +36,32 @@ GKWinHotKey::unregisterHotKey()
 int 
 GKWinHotKey::id() const {
     return (modifiers_ << 16) + virtualKey_;
+}
+
+
+void
+GKWinHotKeyManager::setHWND(HWND hwnd) {
+    hwnd_ = hwnd;
+}
+
+HWND
+GKWinHotKeyManager::hwnd() const {
+    return hwnd_;
+}
+
+GKPtr<GKHotKey>
+GKWinHotKeyManager::createHotKey(const std::string & keySequence) {
+    return std::make_shared<GKWinHotKey>(hwnd(), keySequence);
+}
+
+
+void
+GKWinConfig::load() {
+    entries_.push_back({ "F1", "Notepad.exe" });
+    entries_.push_back({ "F2", "ie.exe" });
+}
+
+void
+GKWinSystem::postNotification(const std::string & title, const std::string & message) {
+    // TODO:
 }

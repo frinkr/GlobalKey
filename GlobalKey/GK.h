@@ -19,6 +19,9 @@ using GKPtr = std::shared_ptr<T>;
 
 using GKHandler = std::function<void()>;
 
+using GKKeySequence = std::string;
+using GKAppDescriptor = std::string;
+
 enum class GKErr : unsigned char{
     noErr             = 0,
     
@@ -31,10 +34,13 @@ enum class GKErr : unsigned char{
 
 class GKAppId {
 public:
+
     virtual ~GKAppId() {};
     
     virtual std::string
-    description() const = 0;
+    descriptor() const = 0;
+
+protected:
 };
 
 
@@ -46,8 +52,8 @@ public:
     /**
      * The application identifier
      */
-    virtual const GKAppId &
-    id() const = 0;
+    virtual const GKAppDescriptor &
+    descriptor() const = 0;
 
     /**
      * Bring the application front
@@ -101,15 +107,18 @@ public:
     virtual ~GKAppFactory() {};
     
     virtual GKPtr<GKApp>
-    getOrCreateApp(GKPtr<const GKAppId> appId) = 0;
+    getOrCreateApp(const GKAppDescriptor & appDescriptor) = 0;
 };
 
 class GKHotKey {
 public:
-    explicit GKHotKey(std::string keySequence)
+    explicit GKHotKey(GKKeySequence keySequence)
     : keySequence_(std::move(keySequence)) {}
 
     virtual ~GKHotKey() {}
+
+    virtual int
+    id() const = 0;
 
     virtual void
     registerHotKey() = 0;
@@ -135,27 +144,69 @@ public:
 
 protected:
     GKHandler handler_;
-    std::string keySequence_;
+    GKKeySequence keySequence_;
 };
 
+
+class GKHotKeyManager {
+public:
+    static GKHotKeyManager &
+    instance();
+
+    virtual ~GKHotKeyManager();
+
+    virtual void
+    loadHotKeys();
+
+    virtual void
+    registerHotKeys();
+
+    virtual void
+    unregisterHotKeys();
+
+    const std::vector<GKPtr<GKHotKey>> &
+    hotKeys() const;
+
+    virtual GKPtr<GKHotKey>
+    createHotKey(const GKKeySequence& keySequence) = 0;
+
+private:
+    std::vector<GKPtr<GKHotKey>> hotKeys_;
+};
+
+
 class GKConfig {
+private:
+    struct Entry {
+        GKKeySequence     keySequence;
+        GKAppDescriptor   appDescriptor;
+    };
+
 public:
     virtual ~GKConfig() {}
 
     virtual std::string
-    path() const = 0;
+    path() const;
 
     virtual size_t
-    appCount() const = 0;
+    appCount() const;
 
-    virtual std::string
-    appKeySequence(size_t index) const = 0;
+    virtual const GKKeySequence&
+    appKeySequence(size_t index) const;
     
-    virtual GKPtr<const GKAppId>
-    appId(size_t index) const = 0;
+    virtual const GKAppDescriptor &
+    appDescriptor(size_t index) const;
 
     static const GKConfig &
     instance();
+
+protected:
+    virtual void
+    load() = 0;
+
+protected:
+    std::string file_;
+    std::vector<Entry> entries_;
 };
 
 class GKSystem {
@@ -168,20 +219,11 @@ public:
 
     virtual void
     postNotification(const std::string & title, const std::string & message) = 0;
+};
 
-    void
-    toggleApp(size_t appIndex) {
-        auto appId = GKConfig::instance().appId(appIndex);
-        auto app = GKAppFactory::instance().getOrCreateApp(appId);
-        if (!app->running()) 
-            if (GKErr::noErr != app->launch()) {
-                postNotification("GlobalKey", "Failed to launch application " + appId->description());
-                return;
-            }
-        if (app->atFrontmost())
-            app->hide();
-        else
-            app->bringFront();    
-    }
 
+class GKHelper {
+public:
+    static void
+    toggleApp(size_t appIndex);
 };
