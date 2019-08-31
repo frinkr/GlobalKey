@@ -1,62 +1,63 @@
 #pragma once
 #include "GK.h"
 
+
+using GKKeySequence = std::string;
+
 class GKHotKey {
 public:
-    explicit GKHotKey(GKKeySequence keySequence)
-        : keySequence_(std::move(keySequence)) {}
+    using Handler = std::function<void()>;
 
-    virtual ~GKHotKey() {}
+public:
+    explicit GKHotKey(GKKeySequence keySequence);
 
-    virtual void
-        registerHotKey() = 0;
-
-    virtual void
-        unregisterHotKey() = 0;
+    virtual ~GKHotKey();
 
     virtual void
-        invoke() {
-        if (handler_)
-            handler_();
-    }
+    registerHotKey();
+
+    virtual void
+    unregisterHotKey();
+
+    virtual void
+    invoke();
+
+    virtual int
+    id() const;
 
     void
-        setHandler(GKHandler handler) {
-        handler_ = handler;
-    }
+    setHandler(Handler handler);
 
-    const GKHandler&
-        handler() const {
-        return handler_;
-    }
-
+    const Handler &
+    handler() const;
+    
 protected:
-    GKHandler handler_;
+    Handler handler_;
     GKKeySequence keySequence_;
+    class Imp;
+    friend class Imp;
+    std::unique_ptr<Imp> imp_;
 };
 
 
 class GKHotKeyManager {
 public:
     static GKHotKeyManager&
-        instance();
+    instance();
 
     virtual ~GKHotKeyManager();
 
     virtual void
-        loadHotKeys();
+    loadHotKeys();
 
     virtual void
-        registerHotKeys();
+    registerHotKeys();
 
     virtual void
-        unregisterHotKeys();
+    unregisterHotKeys();
 
     const std::vector<GKPtr<GKHotKey>>&
-        hotKeys() const;
-
-    virtual GKPtr<GKHotKey>
-        createHotKey(const GKKeySequence& keySequence) = 0;
+    hotKeys() const;
 
 private:
     std::vector<GKPtr<GKHotKey>> hotKeys_;

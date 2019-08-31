@@ -6,12 +6,7 @@
 
 
 namespace Win32 {
-    using ProcessId = DWORD;
-
-    struct MainWindowData {
-        ProcessId processId;
-        HWND windowHandle;
-    };
+    using DWORD = DWORD;
 
     BOOL isMainWindow(HWND handle)
     {
@@ -20,8 +15,8 @@ namespace Win32 {
 
     BOOL CALLBACK enumWindowsCallback(HWND handle, LPARAM lParam)
     {
-        MainWindowData& data = *(MainWindowData*)lParam;
-        ProcessId processId = 0;
+        auto & data = *(GKMainWindowData*)lParam;
+        DWORD processId = 0;
         GetWindowThreadProcessId(handle, &processId);
         if (data.processId != processId || !isMainWindow(handle))
             return TRUE;
@@ -29,17 +24,17 @@ namespace Win32 {
         return FALSE;
     }
 
-    HWND findMainWinow(ProcessId processId)
+    HWND findMainWinow(DWORD processId)
     {
-        MainWindowData data;
+        GKMainWindowData data;
         data.processId = processId;
         data.windowHandle = 0;
         EnumWindows(enumWindowsCallback, (LPARAM)& data);
         return data.windowHandle;
     }
 
-    ProcessId GetProcessByName(PCSTR name) {
-        ProcessId pid = 0;
+    DWORD GetProcessByName(PCSTR name) {
+        DWORD pid = 0;
 
         // Create toolhelp snapshot.
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -64,126 +59,100 @@ namespace Win32 {
     }
 }
 
-struct GKWinApp::Imp {
+GKAppProxy::Imp::Imp(GKAppProxy* parent)
+    : parent_(parent) {}
 
-    explicit Imp(GKWinApp* parent) : parent_(parent) {}
-
-    void update() {
-        data_.processId = Win32::GetProcessByName(parent_->descriptor_.c_str());
-        if (data_.processId)
-            data_.windowHandle = Win32::findMainWinow(data_.processId);
-        else
-            data_.windowHandle = 0;
-    }
-
-    Win32::MainWindowData data_;
-    GKWinApp* parent_{};
-};
-
-GKWinApp::GKWinApp(const GKAppDescriptor & descriptor)
-    : GKApp(descriptor)
-    , imp_(std::make_unique<Imp>(this))
-{
-    imp_->update();
-}
-
-GKWinApp::~GKWinApp() {
-    
-}
 
 GKErr
-GKWinApp::bringFront() {
-    SetForegroundWindow(imp_->data_.windowHandle);
+GKAppProxy::Imp::bringFront() {
+    update();
+    SetForegroundWindow(data_.windowHandle);
     return GKErr::notImplemented;
 }
 
 GKErr
-GKWinApp::show() {
+GKAppProxy::Imp::show() {
+    update();
     return GKErr::notImplemented;
 }
 
 GKErr
-GKWinApp::hide() {
+GKAppProxy::Imp::hide() {
+    update();
     return GKErr::notImplemented;
 }
 
 bool
-GKWinApp::visible() const {
+GKAppProxy::Imp::visible() const {
+    update();
     return false;
 }
 
 bool
-GKWinApp::atFrontmost() const {
+GKAppProxy::Imp::atFrontmost() const {
+    update();
     return false;
 }
 
 bool
-GKWinApp::running() const {
-    return imp_->data_.processId != 0;
+GKAppProxy::Imp::running() const {
+    update();
+    return data_.processId != 0;
 }
 
 GKErr
-GKWinApp::launch() {
+GKAppProxy::Imp::launch() {
+    update();
     return GKErr::notImplemented;
 }
 
-GKPtr<GKApp>
-GKWinAppFactory::getOrCreateApp(const GKAppDescriptor & appDescriptor) {
-    return std::make_shared<GKWinApp>(appDescriptor);
+void
+GKAppProxy::Imp::update() const {
+    data_.processId = Win32::GetProcessByName(parent_->descriptor_.c_str());
+    if (data_.processId)
+        data_.windowHandle = Win32::findMainWinow(data_.processId);
+    else
+        data_.windowHandle = 0;
 }
 
-GKWinHotKey::GKWinHotKey(HWND hwnd, const GKKeySequence & keySequence)
-    : GKHotKey(keySequence)
+
+GKHotKey::Imp::Imp(GKHotKey * parent, HWND hwnd)
+    : parent_{parent}
     , hwnd_(hwnd)
 {
     modifiers_ = MOD_NOREPEAT;
-
+    
     std::map<std::string, UINT> map {
         {"F1", VK_F1},
         {"F2", VK_F2},
         {"F3", VK_F3},
     };
-    virtualKey_ = map[keySequence];
+    virtualKey_ = map[parent_->keySequence_];
 }
 
 void 
-GKWinHotKey::registerHotKey()
+GKHotKey::Imp::registerHotKey()
 {
     RegisterHotKey(hwnd_, id(), modifiers_, virtualKey_);
 }
 
 void 
-GKWinHotKey::unregisterHotKey()
+GKHotKey::Imp::unregisterHotKey()
 {
     UnregisterHotKey(hwnd_, id());
 }
 
 int 
-GKWinHotKey::id() const {
+GKHotKey::Imp::id() const {
     return (modifiers_ << 16) + virtualKey_;
 }
 
-
-void
-GKWinHotKeyManager::setHWND(HWND hwnd) {
-    hwnd_ = hwnd;
-}
-
-HWND
-GKWinHotKeyManager::hwnd() const {
-    return hwnd_;
-}
-
-GKPtr<GKHotKey>
-GKWinHotKeyManager::createHotKey(const std::string & keySequence) {
-    return std::make_shared<GKWinHotKey>(hwnd(), keySequence);
-}
-
+HWND GKHotKeyCreationHWND  = 0;
 
 void
 GKWinConfig::load() {
-    entries_.push_back({ "F1", "Notepad.exe" });
-    entries_.push_back({ "F2", "ie.exe" });
+    entries_.push_back({ "F1", "WindowsTerminal.exe" });
+    entries_.push_back({ "F2", "devenv.exe" });
 }
 
 void

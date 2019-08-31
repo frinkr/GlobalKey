@@ -19,7 +19,7 @@ private:
     std::string path_;
 };
 
-class GKMacApp : public GKApp {
+class GKMacApp : public GKAppProxy {
 public:
     explicit GKMacApp(const GKMacAppId & appId);
 
@@ -60,7 +60,7 @@ class GKMacAppFactory : public GKAppFactory {
 public:
     GKMacAppFactory();
         
-    GKPtr<GKApp>
+    GKPtr<GKAppProxy>
     getOrCreateApp(GKPtr<const GKAppId> appId) override;
 };
 

@@ -12,6 +12,14 @@ if (WIN32)
     GK.cpp
     GKWin.h
     GKWin.cpp
+    GKProxyApp.h
+    GKProxyApp.cpp
+    GKHotKey.h
+    GKHotKey.cpp
+    GKConfig.h
+    GKConfig.cpp
+    GKTask.h
+    GKTask.cpp
     win32/App.cpp
     win32/Resource.h
     win32/Resource.rc

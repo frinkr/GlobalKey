@@ -22,14 +22,11 @@ HINSTANCE hInst;
 NOTIFYICONDATA structNID;
 BOOL bEnabled;
 
-
-std::vector<GKWinHotKey> hotKeys;
-
 void LoadHotKeys() {
-    GKWinHotKeyManager & mgr = dynamic_cast<GKWinHotKeyManager &>(GKHotKeyManager::instance());
-    mgr.setHWND(hWnd);
-    mgr.loadHotKeys();
+    GKHotKeyCreationHWND = hWnd;
+    GKHotKeyManager::instance().loadHotKeys();
 }
+
 BOOL RegisterHotKeys()
 {
     GKHotKeyManager::instance().registerHotKeys();
@@ -45,7 +42,7 @@ BOOL UnRegisterHotKeys()
 BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
     const auto & hotKeys = GKHotKeyManager::instance().hotKeys();
     for (auto & key : hotKeys) {
-        if (std::dynamic_pointer_cast<GKWinHotKey>(key)->id() == wParam) {
+        if (key->id() == wParam) {
             key->invoke();
         }
     }

@@ -2,83 +2,74 @@
 
 #include <Windows.h>
 #include "GK.h"
+#include "GKConfig.h"
+#include "GKProxyApp.h"
 
-class GKWinApp : public GKApp {
+struct GKMainWindowData {
+    DWORD processId;
+    HWND  windowHandle;
+};
+
+class GKAppProxy::Imp {
 public:
-    explicit GKWinApp(const GKAppDescriptor & descriptor);
-
-    ~GKWinApp();
-    
-    GKErr
-    bringFront() override;
+    explicit Imp(GKAppProxy* parent);
 
     GKErr
-    show() override;
+    bringFront();
 
     GKErr
-    hide() override;
+    show();
+
+    GKErr
+    hide();
 
     bool
-    visible() const override;
+    visible() const;
 
     bool
-    atFrontmost() const override;
+    atFrontmost() const;
 
     bool
-    running() const override;
+    running() const;
 
     GKErr
-    launch() override;
+    launch();
 
 private:
-    struct Imp;
-    std::unique_ptr<Imp> imp_;
+    void
+    update() const;
+
+private:
+    mutable GKMainWindowData data_{};
+    GKAppProxy* parent_{};
 };
 
-
-class GKWinAppFactory : public GKAppFactory {
+class GKHotKey::Imp {
 public:
-    GKPtr<GKApp>
-    getOrCreateApp(const GKAppDescriptor & appDescriptor) override;
-};
-
-class GKWinHotKey : public GKHotKey {
-public:
-    GKWinHotKey(HWND hwnd, const GKKeySequence& keySequence);
-
+    explicit Imp(GKHotKey * parent, HWND hwnd);
+    
     void
-    registerHotKey() override;
-
+    registerHotKey();
+    
     void
-    unregisterHotKey() override;
-
+    unregisterHotKey();
+    
     int 
     id() const;
+
 private:
+    GKHotKey * parent_{};
     HWND hwnd_{};
     int modifiers_{};
     int virtualKey_{};
 };
 
-class GKWinHotKeyManager: public GKHotKeyManager {
-public:
-    void
-    setHWND(HWND hwnd);
-
-    HWND
-    hwnd() const;
-
-    GKPtr<GKHotKey>
-    createHotKey(const std::string & keySequence) override;
-
-private:
-    HWND  hwnd_{};
-};
+extern HWND GKHotKeyCreationHWND;
 
 class GKWinConfig : public GKConfig {
 protected:
     friend GKConfig;
-
+    
     void
     load() override;
 };
