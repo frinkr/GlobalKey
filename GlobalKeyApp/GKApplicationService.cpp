@@ -22,13 +22,13 @@ GKConfig::appCount() const {
 }
 
 const std::string&
-GKConfig::appKeySequence(size_t index) const {
+GKConfig::keySequence(size_t index) const {
     return entries_[index].keySequence;
 }
 
-const GKAppDescriptor&
-GKConfig::appDescriptor(size_t index) const {
-    return entries_[index].appDescriptor;
+const std::string &
+GKConfig::taskDescriptor(size_t index) const {
+    return entries_[index].taskDescriptor;
 }
 
 void
@@ -52,7 +52,7 @@ GKHotKeyManager::~GKHotKeyManager() = default;
 void
 GKHotKeyManager::loadHotKeys() {
     for (size_t i = 0; i < GKConfig::instance().appCount(); ++i) {
-        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(GKConfig::instance().appKeySequence(i));
+        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(GKConfig::instance().keySequence(i));
         hotKey->setHandler([i]() {
             GKToggleAppTask task(i);
             task.run();

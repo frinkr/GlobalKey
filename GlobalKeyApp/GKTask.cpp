@@ -7,16 +7,16 @@ GKToggleAppTask::GKToggleAppTask(size_t appIndex)
 
 void
 GKToggleAppTask::run() {
-    auto appDescriptor = GKConfig::instance().appDescriptor(appIndex_);
-    auto appProxy = std::make_shared<GKAppProxy>(appDescriptor);
+    auto taskDescriptor = GKConfig::instance().taskDescriptor(appIndex_);
+    auto appProxy = std::make_shared<GKAppProxy>(taskDescriptor);
     if (!appProxy) {
-        GKSystem::postNotification("GlobalKey", "Failed to find application " + appDescriptor);
+        GKSystem::postNotification("GlobalKey", "Failed to find application " + taskDescriptor);
         return;
     }
 
     if (!appProxy->running())
         if (GKErr::noErr != appProxy->launch()) {
-            GKSystem::postNotification("GlobalKey", "Failed to launch application " + appDescriptor);
+            GKSystem::postNotification("GlobalKey", "Failed to launch application " + taskDescriptor);
             return;
         }
     if (appProxy->atFrontmost())

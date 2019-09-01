@@ -81,7 +81,7 @@ public:
     appCount() const override;
 
     std::string
-    appKeySequence(size_t index) const override;
+    keySequence(size_t index) const override;
     
     GKPtr<const GKAppId>
     appId(size_t index) const override;

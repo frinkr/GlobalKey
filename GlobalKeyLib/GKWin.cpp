@@ -66,31 +66,56 @@ GKAppProxy::Imp::Imp(GKAppProxy* parent)
 GKErr
 GKAppProxy::Imp::bringFront() {
     update();
+    if (!running())
+        return GKErr::appNotRunning;
+
+    ShowWindow(data_.windowHandle, SW_RESTORE);
     SetForegroundWindow(data_.windowHandle);
-    return GKErr::notImplemented;
+    return GKErr::noErr;
 }
 
 GKErr
 GKAppProxy::Imp::show() {
     update();
-    return GKErr::notImplemented;
+    if (!running())
+        return GKErr::appNotRunning;
+
+    ShowWindow(data_.windowHandle, SW_RESTORE);
+    return GKErr::noErr;
 }
 
 GKErr
 GKAppProxy::Imp::hide() {
     update();
-    return GKErr::notImplemented;
+    if (!running())
+        return GKErr::appNotRunning;
+    ShowWindow(data_.windowHandle, SW_MINIMIZE);
+    return GKErr::noErr;
 }
 
 bool
 GKAppProxy::Imp::visible() const {
     update();
-    return false;
+    if (!running())
+        return false;
+    return IsWindowVisible(data_.windowHandle);
 }
 
 bool
 GKAppProxy::Imp::atFrontmost() const {
     update();
+
+    if (!running())
+        return false;
+
+    DWORD threadId = GetWindowThreadProcessId(data_.windowHandle, NULL);
+    if (threadId) {
+        GUITHREADINFO gui;
+        gui.cbSize = sizeof(GUITHREADINFO);
+        if (GetGUIThreadInfo(threadId, &gui)) {
+            return data_.windowHandle == gui.hwndActive || data_.windowHandle == gui.hwndFocus;
+        }
+    }
     return false;
 }
 

@@ -7,7 +7,7 @@ class GKConfig : private GKNoCopy {
 private:
     struct Entry {
         GKKeySequence     keySequence;
-        GKAppDescriptor   appDescriptor;
+        std::string       taskDescriptor;
     };
 
 public:
@@ -18,11 +18,11 @@ public:
     size_t
     appCount() const;
 
-    const GKKeySequence&
-    appKeySequence(size_t index) const;
+    const GKKeySequence &
+    keySequence(size_t index) const;
 
-    const GKAppDescriptor&
-    appDescriptor(size_t index) const;
+    const std::string &
+    taskDescriptor(size_t index) const;
 
     static const GKConfig&
     instance();
