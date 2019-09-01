@@ -6,16 +6,25 @@ public:
     virtual ~GKTask() {}
 
     virtual void
-    run() = 0;
+    run(const std::vector<std::string> & args) = 0;
 };
 
 class GKToggleAppTask : public GKTask {
 public:
-    explicit GKToggleAppTask(size_t appIndex);
+    void
+    run(const std::vector<std::string>& args) override;
+};
+
+
+class GKTaskEngine : private GKNoCopy {
+public:
+
+    static GKTaskEngine&
+    instance();
 
     void
-    run() override;
+    runTask(const std::string & taskCommand);
 
-private:
-    size_t appIndex_;
+    std::unique_ptr<GKTask>
+    createTask(const std::string& taskName);
 };

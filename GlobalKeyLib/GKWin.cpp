@@ -59,8 +59,8 @@ namespace Win32 {
     }
 
     std::pair<UINT, UINT> 
-    parseKeySequence(const GKKeySequence& keySequence) {
-        auto [mod, key] = GKSplitKeySequence(keySequence);
+    parseKeySequence(const GKKeySequence& taskKeySequence) {
+        auto [mod, key] = GKSplitKeySequence(taskKeySequence);
 
         UINT winMod = MOD_NOREPEAT;
         if (mod & kSHIFT) winMod |= MOD_SHIFT;
@@ -224,5 +224,6 @@ HWND GKHotKeyTargetHWND  = 0;
 
 void
 GKSystemImp::postNotification(const std::string & title, const std::string & message) {
+    ::MessageBoxA(NULL, message.c_str(), title.c_str(), MB_OK);
     // TODO:
 }

@@ -12,7 +12,7 @@ public:
     using Handler = std::function<void()>;
 
 public:
-    explicit GKHotKey(GKKeySequence keySequence);
+    explicit GKHotKey(GKKeySequence taskKeySequence);
 
     virtual ~GKHotKey();
 
@@ -50,4 +50,4 @@ enum GKHotKeyModifier {
 };
 
 std::pair<GKHotKeyModifier, std::string>
-GKSplitKeySequence(const GKKeySequence& keySequence);
+GKSplitKeySequence(const GKKeySequence& taskKeySequence);

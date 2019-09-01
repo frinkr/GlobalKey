@@ -46,6 +46,7 @@ BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
     for (auto & key : hotKeys) {
         if (WPARAM(key->ref()) == wParam) {
             key->invoke();
+            return TRUE;
         }
     }
     return TRUE;

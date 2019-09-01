@@ -67,8 +67,8 @@ public:
 
 class GKMacConfig : public GKConfig {
 private:
-    struct Entry {
-        std::string   keySequence;
+    struct TaskEntry {
+        std::string   taskKeySequence;
         std::string   bundlePath;
     };
 public:
@@ -78,10 +78,10 @@ public:
     path() const override;
     
     size_t
-    appCount() const override;
+    taskCount() const override;
 
     std::string
-    keySequence(size_t index) const override;
+    taskKeySequence(size_t index) const override;
     
     GKPtr<const GKAppId>
     appId(size_t index) const override;
@@ -89,7 +89,7 @@ public:
 private:
     std::string file_;
 
-    std::vector<Entry> entries_;
+    std::vector<TaskEntry> entries_;
 };
 
 

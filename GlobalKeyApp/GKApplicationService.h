@@ -5,9 +5,9 @@
 
 class GKConfig : private GKNoCopy {
 private:
-    struct Entry {
-        GKKeySequence     keySequence;
-        std::string       taskDescriptor;
+    struct TaskEntry {
+        GKKeySequence     taskKeySequence;
+        std::string       taskCommand;
     };
 
 public:
@@ -16,13 +16,13 @@ public:
     path() const;
 
     size_t
-    appCount() const;
+    taskCount() const;
 
     const GKKeySequence &
-    keySequence(size_t index) const;
+    taskKeySequence(size_t index) const;
 
     const std::string &
-    taskDescriptor(size_t index) const;
+    taskCommand(size_t index) const;
 
     static const GKConfig&
     instance();
@@ -35,7 +35,7 @@ protected:
 
 protected:
     std::string file_;
-    std::vector<Entry> entries_;
+    std::vector<TaskEntry> entries_;
 };
 
 

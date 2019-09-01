@@ -17,25 +17,27 @@ GKConfig::path() const {
 }
 
 size_t
-GKConfig::appCount() const {
+GKConfig::taskCount() const {
     return entries_.size();
 }
 
 const std::string&
-GKConfig::keySequence(size_t index) const {
-    return entries_[index].keySequence;
+GKConfig::taskKeySequence(size_t index) const {
+    return entries_[index].taskKeySequence;
 }
 
 const std::string &
-GKConfig::taskDescriptor(size_t index) const {
-    return entries_[index].taskDescriptor;
+GKConfig::taskCommand(size_t index) const {
+    return entries_[index].taskCommand;
 }
 
 void
 GKConfig::load() {
 #if GK_WIN
-    entries_.push_back({ "F1", "WindowsTerminal.exe" });
-    entries_.push_back({ "F2", "devenv.exe" });
+    entries_.push_back({ "F1", "toggle WindowsTerminal.exe" });
+    entries_.push_back({ "F2", "toggle devenv.exe" });
+    entries_.push_back({ "CTRL+DOWN", "volume -5" });
+    entries_.push_back({ "CTRL+UP", "volume +5" });
 #else
 #endif
 }
@@ -51,11 +53,11 @@ GKHotKeyManager::~GKHotKeyManager() = default;
 
 void
 GKHotKeyManager::loadHotKeys() {
-    for (size_t i = 0; i < GKConfig::instance().appCount(); ++i) {
-        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(GKConfig::instance().keySequence(i));
+    for (size_t i = 0; i < GKConfig::instance().taskCount(); ++i) {
+        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(GKConfig::instance().taskKeySequence(i));
         hotKey->setHandler([i]() {
-            GKToggleAppTask task(i);
-            task.run();
+            auto taskCommand = GKConfig::instance().taskCommand(i);
+            GKTaskEngine::instance().runTask(taskCommand);
         });
         hotKeys_.push_back(hotKey);
     }
