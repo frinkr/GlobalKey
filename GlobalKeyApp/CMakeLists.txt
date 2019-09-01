@@ -10,9 +10,12 @@ if (WIN32)
   set(SOURCES
     GKTask.h
     GKTask.cpp
-    GKApplicationService.h
-    GKApplicationService.cpp
-    
+    GKAppConfig.h
+    GKAppConfig.cpp
+    GKAppHotKeyManager.h
+    GKAppHotKeyManager.cpp
+    GKSystemService.h
+    GKSystemService.cpp
     win32/main.cpp
     win32/Resource.h
     win32/Resource.rc

@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "GKHotKey.h"
 #include "GKProxyApp.h"
 
@@ -37,28 +38,3 @@ protected:
     std::string file_;
     std::vector<TaskEntry> entries_;
 };
-
-
-class GKHotKeyManager {
-public:
-    static GKHotKeyManager&
-    instance();
-
-    virtual ~GKHotKeyManager();
-
-    virtual void
-    loadHotKeys();
-
-    virtual void
-    registerHotKeys();
-
-    virtual void
-    unregisterHotKeys();
-
-    const std::vector<GKPtr<GKHotKey>>&
-    hotKeys() const;
-
-private:
-    std::vector<GKPtr<GKHotKey>> hotKeys_;
-};
-

@@ -1,7 +1,8 @@
 #include <vector>
+#include "GKProxyApp.h"
 #include "GKTask.h"
 #include "GKSystem.h"
-#include "GKApplicationService.h"
+#include "GKSystemService.h"
 
 namespace {
     std::pair<std::string, std::vector<std::string>> 
@@ -44,6 +45,16 @@ GKToggleAppTask::run(const std::vector<std::string>& args) {
         appProxy->bringFront();
 }
 
+
+void
+GKSystemVolumeTask::run(const std::vector<std::string>& args) {
+    if (args.size() == 1) {
+        int value = std::stoi(args[0]);
+        GKSystemService::adjustVolume(value);
+    }
+}
+
+
 GKTaskEngine&
 GKTaskEngine::instance() {
     static GKTaskEngine engine;
@@ -63,6 +74,7 @@ std::unique_ptr<GKTask>
 GKTaskEngine::createTask(const std::string& taskName) {
     if (taskName == "toggle")
         return std::make_unique<GKToggleAppTask>();
-
+    else if (taskName == "volume")
+        return std::make_unique<GKSystemVolumeTask>();
     return std::unique_ptr<GKTask>();
 }

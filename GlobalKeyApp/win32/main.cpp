@@ -9,7 +9,7 @@
 #include <string>
 #include "GK.h"
 #include "GKWin.h"
-#include "..\GKApplicationService.h"
+#include "..\GKAppHotKeyManager.h"
 
 // Libs
 #pragma comment(lib, "comctl32.lib")
@@ -26,23 +26,23 @@ BOOL bEnabled;
 
 void LoadHotKeys() {
     GKHotKeyTargetHWND = hWnd;
-    GKHotKeyManager::instance().loadHotKeys();
+    GKAppHotKeyManager::instance().loadHotKeys();
 }
 
 BOOL RegisterHotKeys()
 {
-    GKHotKeyManager::instance().registerHotKeys();
+    GKAppHotKeyManager::instance().registerHotKeys();
     return TRUE;
 }
 
 BOOL UnRegisterHotKeys()
 {
-    GKHotKeyManager::instance().unregisterHotKeys();
+    GKAppHotKeyManager::instance().unregisterHotKeys();
     return TRUE;
 }
 
 BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
-    const auto & hotKeys = GKHotKeyManager::instance().hotKeys();
+    const auto & hotKeys = GKAppHotKeyManager::instance().hotKeys();
     for (auto & key : hotKeys) {
         if (WPARAM(key->ref()) == wParam) {
             key->invoke();

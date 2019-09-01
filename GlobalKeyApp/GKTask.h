@@ -16,6 +16,12 @@ public:
 };
 
 
+class GKSystemVolumeTask : public GKTask {
+public:
+    void
+    run(const std::vector<std::string>& args) override;
+};
+
 class GKTaskEngine : private GKNoCopy {
 public:
 
