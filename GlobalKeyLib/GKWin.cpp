@@ -147,7 +147,7 @@ GKHotKey::Imp::id() const {
     return (modifiers_ << 16) + virtualKey_;
 }
 
-HWND GKHotKeyCreationHWND  = 0;
+HWND GKHotKeyTargetHWND  = 0;
 
 void
 GKSystemImp::postNotification(const std::string & title, const std::string & message) {

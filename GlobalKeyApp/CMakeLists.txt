@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-set(PROJECT_NAME GlobalKey)
+set(PROJECT_NAME GlobalKeyApp)
 project(${PROJECT_NAME})
 
 if(POLICY CMP0071)
@@ -8,23 +8,12 @@ endif()
 
 if (WIN32)
   set(SOURCES
-    GK.h
-    GK.cpp
-    GKWin.h
-    GKWin.cpp
-    GKProxyApp.h
-    GKProxyApp.cpp
-    GKHotKey.h
-    GKHotKey.cpp
-    GKSystem.h
-    GKSystem.cpp
-
     GKTask.h
     GKTask.cpp
     GKApplicationService.h
     GKApplicationService.cpp
     
-    win32/App.cpp
+    win32/main.cpp
     win32/Resource.h
     win32/Resource.rc
   )
@@ -128,6 +117,12 @@ else()
     )
 
 endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE GlobalKeyLib)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  ${CMAKE_SOURCE_DIR}/GlobalKeyLib
+  )
 
 
 ########################### Mac Bundle #####################

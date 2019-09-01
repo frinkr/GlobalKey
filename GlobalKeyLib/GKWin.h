@@ -65,7 +65,7 @@ private:
     int virtualKey_{};
 };
 
-extern HWND GKHotKeyCreationHWND;
+extern HWND GKHotKeyTargetHWND;
 
 class GKSystemImp {
 public:

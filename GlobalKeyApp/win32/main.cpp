@@ -7,8 +7,8 @@
 #include "Resource.h"
 #include <iostream>
 #include <string>
-#include "..\GK.h"
-#include "..\GKWin.h"
+#include "GK.h"
+#include "GKWin.h"
 #include "..\GKApplicationService.h"
 
 // Libs
@@ -25,7 +25,7 @@ NOTIFYICONDATA structNID;
 BOOL bEnabled;
 
 void LoadHotKeys() {
-    GKHotKeyCreationHWND = hWnd;
+    GKHotKeyTargetHWND = hWnd;
     GKHotKeyManager::instance().loadHotKeys();
 }
 

@@ -1,5 +1,4 @@
 #include "GKHotKey.h"
-#include "GKTask.h"
 
 #if GK_MAC
 #  include "GKMac.h"
@@ -12,7 +11,7 @@ GKHotKey::GKHotKey(GKKeySequence keySequence)
     : keySequence_(std::move(keySequence))
 {
 #if GK_WIN
-    imp_ = std::make_unique<Imp>(this, GKHotKeyCreationHWND);
+    imp_ = std::make_unique<Imp>(this, GKHotKeyTargetHWND);
 #endif
 }
 
