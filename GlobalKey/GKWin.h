@@ -2,8 +2,9 @@
 
 #include <Windows.h>
 #include "GK.h"
-#include "GKConfig.h"
 #include "GKProxyApp.h"
+#include "GKHotKey.h"
+#include "GKSystem.h"
 
 struct GKMainWindowData {
     DWORD processId;
@@ -66,17 +67,8 @@ private:
 
 extern HWND GKHotKeyCreationHWND;
 
-class GKWinConfig : public GKConfig {
-protected:
-    friend GKConfig;
-    
-    void
-    load() override;
-};
-
-
-class GKWinSystem : public GKSystem {
+class GKSystemImp {
 public:
-    void
-    postNotification(const std::string & title, const std::string & message) override;
+    static void
+    postNotification(const std::string & title, const std::string & message);
 };

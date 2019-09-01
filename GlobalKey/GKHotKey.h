@@ -4,7 +4,7 @@
 
 using GKKeySequence = std::string;
 
-class GKHotKey {
+class GKHotKey : private GKNoCopy {
 public:
     using Handler = std::function<void()>;
 
@@ -37,28 +37,4 @@ protected:
     class Imp;
     friend class Imp;
     std::unique_ptr<Imp> imp_;
-};
-
-
-class GKHotKeyManager {
-public:
-    static GKHotKeyManager&
-    instance();
-
-    virtual ~GKHotKeyManager();
-
-    virtual void
-    loadHotKeys();
-
-    virtual void
-    registerHotKeys();
-
-    virtual void
-    unregisterHotKeys();
-
-    const std::vector<GKPtr<GKHotKey>>&
-    hotKeys() const;
-
-private:
-    std::vector<GKPtr<GKHotKey>> hotKeys_;
 };

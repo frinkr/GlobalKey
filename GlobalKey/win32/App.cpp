@@ -9,6 +9,8 @@
 #include <string>
 #include "..\GK.h"
 #include "..\GKWin.h"
+#include "..\GKApplicationService.h"
+
 // Libs
 #pragma comment(lib, "comctl32.lib")
 

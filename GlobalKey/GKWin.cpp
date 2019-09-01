@@ -150,12 +150,6 @@ GKHotKey::Imp::id() const {
 HWND GKHotKeyCreationHWND  = 0;
 
 void
-GKWinConfig::load() {
-    entries_.push_back({ "F1", "WindowsTerminal.exe" });
-    entries_.push_back({ "F2", "devenv.exe" });
-}
-
-void
-GKWinSystem::postNotification(const std::string & title, const std::string & message) {
+GKSystemImp::postNotification(const std::string & title, const std::string & message) {
     // TODO:
 }

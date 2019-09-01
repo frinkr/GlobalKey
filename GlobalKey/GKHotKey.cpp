@@ -49,39 +49,3 @@ GKHotKey::handler() const {
     return handler_;
 }
 
-GKHotKeyManager&
-GKHotKeyManager::instance() {
-    static GKHotKeyManager instance;
-    return instance;
-}
-
-GKHotKeyManager::~GKHotKeyManager() = default;
-
-void
-GKHotKeyManager::loadHotKeys() {
-    for (size_t i = 0; i < GKConfig::instance().appCount(); ++i) {
-        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(GKConfig::instance().appKeySequence(i));
-        hotKey->setHandler([i]() {
-            GKToggleAppTask task(i);
-            task.run();
-            });
-        hotKeys_.push_back(hotKey);
-    }
-}
-
-void
-GKHotKeyManager::registerHotKeys() {
-    for (auto& hotKey : hotKeys_)
-        hotKey->registerHotKey();
-}
-
-void
-GKHotKeyManager::unregisterHotKeys() {
-    for (auto& hotKey : hotKeys_)
-        hotKey->unregisterHotKey();
-}
-
-const std::vector<GKPtr<GKHotKey>>&
-GKHotKeyManager::hotKeys() const {
-    return hotKeys_;
-}

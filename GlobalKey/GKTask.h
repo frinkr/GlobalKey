@@ -1,7 +1,7 @@
 #pragma once
 #include "GK.h"
 
-class GKTask {
+class GKTask : private GKNoCopy {
 public:
     virtual ~GKTask() {}
 

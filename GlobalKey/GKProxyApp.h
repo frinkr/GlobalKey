@@ -4,7 +4,7 @@
 
 using GKAppDescriptor = std::string;
 
-class GKAppProxy {
+class GKAppProxy : private GKNoCopy {
 public:
     explicit GKAppProxy(const GKAppDescriptor& descriptor);
 

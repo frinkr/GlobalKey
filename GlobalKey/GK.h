@@ -27,14 +27,10 @@ enum class GKErr : unsigned char{
     notImplemented    = 99,
 };
 
-class GKSystem {
+class GKNoCopy {
 public:
-
-    static GKSystem &
-    instance();
-
-    virtual ~GKSystem() {}
-
-    virtual void
-    postNotification(const std::string & title, const std::string & message) = 0;
+    GKNoCopy() = default;
+protected:
+    GKNoCopy(const GKNoCopy&) = delete;
+    GKNoCopy& operator=(const GKNoCopy&) = delete;
 };
