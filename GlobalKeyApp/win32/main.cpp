@@ -44,7 +44,7 @@ BOOL UnRegisterHotKeys()
 BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
     const auto & hotKeys = GKHotKeyManager::instance().hotKeys();
     for (auto & key : hotKeys) {
-        if (key->id() == wParam) {
+        if (WPARAM(key->ref()) == wParam) {
             key->invoke();
         }
     }

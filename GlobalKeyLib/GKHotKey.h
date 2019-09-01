@@ -1,11 +1,14 @@
 #pragma once
-#include "GK.h"
+#include <vector>
+#include <utility>
 
+#include "GK.h"
 
 using GKKeySequence = std::string;
 
 class GKHotKey : private GKNoCopy {
 public:
+    using Ref = void *;
     using Handler = std::function<void()>;
 
 public:
@@ -22,8 +25,8 @@ public:
     virtual void
     invoke();
 
-    virtual int
-    id() const;
+    virtual Ref
+    ref() const;
 
     void
     setHandler(Handler handler);
@@ -38,3 +41,13 @@ protected:
     friend class Imp;
     std::unique_ptr<Imp> imp_;
 };
+
+enum GKHotKeyModifier {
+    kSHIFT  =  0x01000000,
+    kCTRL   =  kSHIFT << 1,
+    kALT    =  kSHIFT << 2,
+    kMETA   =  kSHIFT << 3,
+};
+
+std::pair<GKHotKeyModifier, std::string>
+GKSplitKeySequence(const GKKeySequence& keySequence);

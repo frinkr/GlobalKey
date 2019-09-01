@@ -55,14 +55,14 @@ public:
     void
     unregisterHotKey();
     
-    int 
-    id() const;
+    GKHotKey::Ref
+    ref() const;
 
 private:
     GKHotKey * parent_{};
     HWND hwnd_{};
-    int modifiers_{};
-    int virtualKey_{};
+    UINT modifiers_{};
+    UINT virtualKey_{};
 };
 
 extern HWND GKHotKeyTargetHWND;

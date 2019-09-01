@@ -26,7 +26,7 @@ public:
     ~GKMacApp();
     
     const GKMacAppId &
-    id() const override;
+    ref() const override;
  
     GKErr
     bringFront() override;
