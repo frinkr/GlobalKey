@@ -25,6 +25,8 @@ namespace {
     }
 }
 
+GK_REGISTER_COMMNAND("toggle", GKToggleAppCommand);
+
 void
 GKToggleAppCommand::run(const std::vector<std::string>& args) {
     auto appDesc = args.front();
@@ -44,6 +46,9 @@ GKToggleAppCommand::run(const std::vector<std::string>& args) {
     else
         appProxy->bringFront();
 }
+
+
+GK_REGISTER_COMMNAND("volume", GKSystemVolumeCommand);
 
 void
 GKSystemVolumeCommand::run(const std::vector<std::string>& args) {
@@ -72,12 +77,7 @@ std::unique_ptr<GKCommand>
 GKCommandEngine::createCommand(const std::string& commandName) const {
     auto itr = commands_.find(commandName);
     if (itr != commands_.end()) 
-        return itr->second->clone();
-    
-//    if (commandName == "toggle")
-//        return std::make_unique<GKToggleAppCommand>();
-//    else if (commandName == "volume")
-//        return std::make_unique<GKSystemVolumeCommand>();
+        return itr->second->clone();    
     return std::unique_ptr<GKCommand>();
 }
 

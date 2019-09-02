@@ -53,3 +53,19 @@ public:
 private:
     std::map<std::string, std::unique_ptr<GKCommand>> commands_;
 };
+
+template <typename T>
+class GKCommandAutoRegister {
+public:
+    explicit GKCommandAutoRegister(const std::string & name) {
+        GKCommandEngine::instance().regiseterCommand(name, std::make_unique<T>());
+    }
+};
+
+#define COMBINE1(X,Y) X##Y  // helper macro
+#define COMBINE(X,Y) COMBINE1(X,Y)
+
+#define GK_REGISTER_COMMNAND(name, T)                               \
+    namespace {                                                     \
+        GKCommandAutoRegister<T> COMBINE(register, __LINE__)(name); \
+    }
