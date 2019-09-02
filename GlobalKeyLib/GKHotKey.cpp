@@ -9,8 +9,8 @@
 #endif
 
 
-GKHotKey::GKHotKey(GKKeySequence taskKeySequence)
-    : keySequence_(std::move(taskKeySequence))
+GKHotKey::GKHotKey(GKKeySequence commandKeySequence)
+    : keySequence_(std::move(commandKeySequence))
 {
 #if GK_WIN
     imp_ = std::make_unique<Imp>(this, GKHotKeyTargetHWND);
@@ -51,11 +51,11 @@ GKHotKey::handler() const {
 }
 
 std::pair<GKHotKeyModifier, std::string>
-GKSplitKeySequence(const GKKeySequence & taskKeySequence) {
+GKSplitKeySequence(const GKKeySequence & commandKeySequence) {
     std::underlying_type_t<GKHotKeyModifier> modifiers = 0;
     std::string key;
 
-    std::stringstream ss(taskKeySequence);
+    std::stringstream ss(commandKeySequence);
     std::string item;
     while (std::getline(ss, item, '+')) {
         std::transform(item.begin(), item.end(), item.begin(),

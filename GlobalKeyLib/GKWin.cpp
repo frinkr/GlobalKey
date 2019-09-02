@@ -59,8 +59,8 @@ namespace Win32 {
     }
 
     std::pair<UINT, UINT> 
-    parseKeySequence(const GKKeySequence& taskKeySequence) {
-        auto [mod, key] = GKSplitKeySequence(taskKeySequence);
+    parseKeySequence(const GKKeySequence& commandKeySequence) {
+        auto [mod, key] = GKSplitKeySequence(commandKeySequence);
 
         UINT winMod = MOD_NOREPEAT;
         if (mod & kSHIFT) winMod |= MOD_SHIFT;

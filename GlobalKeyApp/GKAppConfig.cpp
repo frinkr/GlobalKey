@@ -20,38 +20,38 @@ namespace {
     }
 }
 
-const GKConfig&
-GKConfig::instance() {
-    static GKConfig config;
+const GKAppConfig&
+GKAppConfig::instance() {
+    static GKAppConfig config;
     return config;
 }
 
-GKConfig::GKConfig() {
+GKAppConfig::GKAppConfig() {
     load();
 }
 
 const std::string &
-GKConfig::path() const {
+GKAppConfig::path() const {
     return file_;
 }
 
 size_t
-GKConfig::taskCount() const {
+GKAppConfig::commandCount() const {
     return entries_.size();
 }
 
 const std::string&
-GKConfig::taskKeySequence(size_t index) const {
-    return entries_[index].taskKeySequence;
+GKAppConfig::commandKeySequence(size_t index) const {
+    return entries_[index].commandKeySequence;
 }
 
 const std::string &
-GKConfig::taskCommand(size_t index) const {
-    return entries_[index].taskCommand;
+GKAppConfig::commandText(size_t index) const {
+    return entries_[index].commandText;
 }
 
 void
-GKConfig::load() {
+GKAppConfig::load() {
     json j = sampleJson();
     for (auto& kv : j.items()) 
         entries_.push_back({ kv.key(), kv.value().get<std::string>() });

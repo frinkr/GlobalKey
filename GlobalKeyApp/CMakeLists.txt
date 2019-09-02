@@ -8,8 +8,8 @@ endif()
 
 if (WIN32)
   set(SOURCES
-    GKTask.h
-    GKTask.cpp
+    GKCommand.h
+    GKCommand.cpp
     GKAppConfig.h
     GKAppConfig.cpp
     GKAppHotKeyManager.h

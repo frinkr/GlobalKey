@@ -1,20 +1,20 @@
 #include <vector>
 #include "GKProxyApp.h"
-#include "GKTask.h"
+#include "GKCommand.h"
 #include "GKSystem.h"
 #include "GKSystemService.h"
 
 namespace {
     std::pair<std::string, std::vector<std::string>> 
-    splitTaskCommand(const std::string& taskCommand) {
-        auto pos = taskCommand.find_first_of(' ');
-        if (pos != taskCommand.npos) {
-            auto cmd = taskCommand.substr(0, pos);
-            auto arg = taskCommand.substr(pos + 1);
+    splitCommandText(const std::string& commandText) {
+        auto pos = commandText.find_first_of(' ');
+        if (pos != commandText.npos) {
+            auto cmd = commandText.substr(0, pos);
+            auto arg = commandText.substr(pos + 1);
             return { cmd, {arg} };
         }
         else {
-            return { taskCommand, {} };
+            return { commandText, {} };
         }
     }
 
@@ -26,7 +26,7 @@ namespace {
 }
 
 void
-GKToggleAppTask::run(const std::vector<std::string>& args) {
+GKToggleAppCommand::run(const std::vector<std::string>& args) {
     auto appDesc = args.front();
     auto appProxy = std::make_shared<GKAppProxy>(appDesc);
     if (!appProxy) {
@@ -47,7 +47,7 @@ GKToggleAppTask::run(const std::vector<std::string>& args) {
 
 
 void
-GKSystemVolumeTask::run(const std::vector<std::string>& args) {
+GKSystemVolumeCommand::run(const std::vector<std::string>& args) {
     if (args.size() == 1) {
         int value = std::stoi(args[0]);
         GKSystemService::adjustVolume(value);
@@ -55,26 +55,26 @@ GKSystemVolumeTask::run(const std::vector<std::string>& args) {
 }
 
 
-GKTaskEngine&
-GKTaskEngine::instance() {
-    static GKTaskEngine engine;
+GKCommandEngine&
+GKCommandEngine::instance() {
+    static GKCommandEngine engine;
     return engine;
 }
 
 void
-GKTaskEngine::runTask(const std::string& taskCommand) {
-    auto [cmd, args] = splitTaskCommand(taskCommand);
-    if (auto task = createTask(cmd))
+GKCommandEngine::runCommand(const std::string& commandText) {
+    auto [cmd, args] = splitCommandText(commandText);
+    if (auto task = createCommand(cmd))
         task->run(args);
     else
         postNotification("Command ", cmd, " not found!");
 }
 
-std::unique_ptr<GKTask>
-GKTaskEngine::createTask(const std::string& taskName) {
+std::unique_ptr<GKCommand>
+GKCommandEngine::createCommand(const std::string& taskName) {
     if (taskName == "toggle")
-        return std::make_unique<GKToggleAppTask>();
+        return std::make_unique<GKToggleAppCommand>();
     else if (taskName == "volume")
-        return std::make_unique<GKSystemVolumeTask>();
-    return std::unique_ptr<GKTask>();
+        return std::make_unique<GKSystemVolumeCommand>();
+    return std::unique_ptr<GKCommand>();
 }

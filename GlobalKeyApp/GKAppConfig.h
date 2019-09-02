@@ -4,11 +4,11 @@
 #include "GKHotKey.h"
 #include "GKProxyApp.h"
 
-class GKConfig : private GKNoCopy {
+class GKAppConfig : private GKNoCopy {
 private:
-    struct TaskEntry {
-        GKKeySequence     taskKeySequence;
-        std::string       taskCommand;
+    struct CommandEntry {
+        GKKeySequence     commandKeySequence;
+        std::string       commandText;
     };
 
 public:
@@ -17,24 +17,24 @@ public:
     path() const;
 
     size_t
-    taskCount() const;
+    commandCount() const;
 
     const GKKeySequence &
-    taskKeySequence(size_t index) const;
+    commandKeySequence(size_t index) const;
 
     const std::string &
-    taskCommand(size_t index) const;
+    commandText(size_t index) const;
 
-    static const GKConfig&
+    static const GKAppConfig&
     instance();
 
 protected:
-    GKConfig();
+    GKAppConfig();
 
     void
     load();
 
 protected:
     std::string file_;
-    std::vector<TaskEntry> entries_;
+    std::vector<CommandEntry> entries_;
 };

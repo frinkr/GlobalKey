@@ -1,4 +1,4 @@
-#include "GKTask.h"
+#include "GKCommand.h"
 #include "GKAppConfig.h"
 #include "GKAppHotKeyManager.h"
 
@@ -13,11 +13,11 @@ GKAppHotKeyManager::~GKAppHotKeyManager() = default;
 
 void
 GKAppHotKeyManager::loadHotKeys() {
-    for (size_t i = 0; i < GKConfig::instance().taskCount(); ++i) {
-        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(GKConfig::instance().taskKeySequence(i));
+    for (size_t i = 0; i < GKAppConfig::instance().commandCount(); ++i) {
+        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(GKAppConfig::instance().commandKeySequence(i));
         hotKey->setHandler([i]() {
-            auto taskCommand = GKConfig::instance().taskCommand(i);
-            GKTaskEngine::instance().runTask(taskCommand);
+            auto commandText = GKAppConfig::instance().commandText(i);
+            GKCommandEngine::instance().runCommand(commandText);
         });
         hotKeys_.push_back(hotKey);
     }
