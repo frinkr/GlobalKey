@@ -15,6 +15,12 @@ namespace {
             { "CTRL+UP", "volume +5" },
         };
 #else
+        static json j{
+            { "F1", "toggle /Applications/Emacs.app" },
+            { "F2", "toggle devenv.exe" },
+            { "CTRL+DOWN", "volume -5" },
+            { "CTRL+UP", "volume +5" },
+        };
 #endif
         return j;
     }

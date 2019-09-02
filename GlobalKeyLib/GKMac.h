@@ -3,98 +3,62 @@
 #include <vector>
 
 #include "GK.h"
+#include "GKProxyApp.h"
+#include "GKHotKey.h"
 
-class GKMacAppId : public GKAppId{
+class GKAppProxy::Imp{
 public:
+    explicit Imp(GKAppProxy * parent);
 
-    explicit GKMacAppId(std::string path);
-
-    const std::string &
-    path() const;
-
-    std::string
-    descriptor() const override;
-
-private:
-    std::string path_;
-};
-
-class GKMacApp : public GKAppProxy {
-public:
-    explicit GKMacApp(const GKMacAppId & appId);
-
-    ~GKMacApp();
+    ~Imp();
     
-    const GKMacAppId &
-    ref() const override;
- 
     GKErr
-    bringFront() override;
+    bringFront();
 
     GKErr
-    show() override;
-
-     GKErr
-    hide() override;
-
-    bool
-    visible() const override;
-
-    bool
-    atFrontmost() const override;
-
-    bool
-    running() const override;
+    show();
 
     GKErr
-    launch() override;
+    hide();
+
+    bool
+    visible() const;
+
+    bool
+    atFrontmost() const;
+
+    bool
+    running() const;
+
+    GKErr
+    launch();
 
 private:
-    GKMacAppId id_;
-    struct Imp;
-    std::unique_ptr<Imp> imp_;
+    GKAppProxy * parent_ {};
+    struct MacImp;
+    std::unique_ptr<MacImp> imp_;
 };
 
 
-class GKMacAppFactory : public GKAppFactory {
+class GKHotKey::Imp {
 public:
-    GKMacAppFactory();
-        
-    GKPtr<GKAppProxy>
-    getOrCreateApp(GKPtr<const GKAppId> appId) override;
-};
-
-
-class GKMacConfig : public GKAppConfig {
-private:
-    struct CommandEntry {
-        std::string   commandKeySequence;
-        std::string   bundlePath;
-    };
-public:
-    GKMacConfig();
-
-    std::string
-    path() const override;
+    explicit Imp(GKHotKey * parent);
     
-    size_t
-    commandCount() const override;
-
-    std::string
-    commandKeySequence(size_t index) const override;
-    
-    GKPtr<const GKAppId>
-    appId(size_t index) const override;
-
-private:
-    std::string file_;
-
-    std::vector<CommandEntry> entries_;
-};
-
-
-class GKMacSystem : public GKSystem {
-public:
     void
-    postNotification(const std::string & title, const std::string & message) override;
+    registerHotKey();
+    
+    void
+    unregisterHotKey();
+    
+    GKHotKey::Ref
+    ref() const;
+    
+private:
+    GKHotKey * parent_{};
+};
+
+class GKSystemImp {
+public:
+    static void
+    postNotification(const std::string & title, const std::string & message);
 };
