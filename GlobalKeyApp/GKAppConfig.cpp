@@ -1,4 +1,24 @@
+#include "json.hpp"
+#include <iostream>
 #include "GKAppConfig.h"
+
+using json = nlohmann::json;
+
+namespace {
+    const json &
+    sampleJson() {
+#if GK_WIN
+        static json j{
+            { "F1", "toggle WindowsTerminal.exe" },
+            { "F2", "toggle devenv.exe" },
+            { "CTRL+DOWN", "volume -5" },
+            { "CTRL+UP", "volume +5" },
+        };
+#else
+#endif
+        return j;
+    }
+}
 
 const GKConfig&
 GKConfig::instance() {
@@ -32,11 +52,8 @@ GKConfig::taskCommand(size_t index) const {
 
 void
 GKConfig::load() {
-#if GK_WIN
-    entries_.push_back({ "F1", "toggle WindowsTerminal.exe" });
-    entries_.push_back({ "F2", "toggle devenv.exe" });
-    entries_.push_back({ "CTRL+DOWN", "volume -5" });
-    entries_.push_back({ "CTRL+UP", "volume +5" });
-#else
-#endif
+    json j = sampleJson();
+    for (auto& kv : j.items()) 
+        entries_.push_back({ kv.key(), kv.value().get<std::string>() });
+    
 }

@@ -19,6 +19,8 @@ if (WIN32)
     win32/main.cpp
     win32/Resource.h
     win32/Resource.rc
+
+	json.hpp
   )
 
   add_executable(

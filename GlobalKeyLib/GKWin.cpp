@@ -224,6 +224,6 @@ HWND GKHotKeyTargetHWND  = 0;
 
 void
 GKSystemImp::postNotification(const std::string & title, const std::string & message) {
-    ::MessageBoxA(NULL, message.c_str(), title.c_str(), MB_OK);
+    ::MessageBoxA(NULL, message.c_str(), title.c_str(), MB_OK | MB_TOPMOST);
     // TODO:
 }
