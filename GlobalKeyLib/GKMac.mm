@@ -6,10 +6,6 @@
 #include "GKMac.h"
 
 namespace {
-    void throwBadObjectType() {
-        throw std::runtime_error("Bad Object Type");
-    }
-
     NSString *
     fromStdString(const std::string & str) {
         return [NSString stringWithCString:str.c_str()
@@ -22,35 +18,18 @@ namespace {
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-//                            GKMacAppId
-
-GKMacAppId::GKMacAppId(std::string path)
-    : path_(std::move(path)) {
-}
-
-const std::string &
-GKMacAppId::path() const {
-    return path_;
-}
-
-std::string
-GKMacAppId::description() const {
-    return path_;
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
-//                            GKMacApp
+//                             GKAppProxy::Imp:
 
-struct GKMacApp::Imp {
+struct GKAppProxy::Imp::MacImp {
 public:
-    Imp(GKMacApp * parent)
+    MacImp(GKAppProxy * parent)
     : parent_(parent) {}
     
     NSRunningApplication *
     runningApp() const {
-        NSString * path = fromStdString(parent_->id().path());
+        NSString * path = fromStdString(parent_->descriptor());
         
         NSString * bundleIdentifier = nil;
         NSBundle * bundle = [NSBundle bundleWithPath:path];
@@ -84,23 +63,19 @@ public:
         return [workspace frontmostApplication];
     }
 private:
-    GKMacApp * parent_ {};
+    GKAppProxy * parent_ {};
 };
 
-GKMacApp::GKMacApp(const GKMacAppId & appId)
-    : id_(appId)
-    , imp_(std::make_unique<GKMacApp::Imp>(this))
+GKAppProxy::Imp::Imp(GKAppProxy * parent)
+    : parent_(parent)
+    , imp_(std::make_unique<GKAppProxy::Imp::MacImp>(parent))
     {}
 
-GKMacApp::~GKMacApp() = default;
+GKAppProxy::Imp::~Imp() = default;
 
-const GKMacAppId &
-GKMacApp::id() const {
-    return id_;
-}
 
 GKErr
-GKMacApp::bringFront() {
+GKAppProxy::Imp::bringFront() {
     @autoreleasepool {
         NSRunningApplication * app = imp_->runningApp();
         if (!app)
@@ -115,7 +90,7 @@ GKMacApp::bringFront() {
 }
 
 GKErr
-GKMacApp::show() {
+GKAppProxy::Imp::show() {
     @autoreleasepool {
         NSRunningApplication * app = imp_->runningApp();
         if ([app unhide])
@@ -126,7 +101,7 @@ GKMacApp::show() {
 }
 
 GKErr
-GKMacApp::hide() {
+GKAppProxy::Imp::hide() {
     @autoreleasepool {
         NSRunningApplication * app = imp_->runningApp();
         if ([app hide])
@@ -137,7 +112,7 @@ GKMacApp::hide() {
 }
 
 bool
-GKMacApp::visible() const  {
+GKAppProxy::Imp::visible() const  {
     @autoreleasepool {
         NSRunningApplication * app = imp_->runningApp();
         if (app)
@@ -148,27 +123,27 @@ GKMacApp::visible() const  {
 }
 
 bool
-GKMacApp::atFrontmost() const {
+GKAppProxy::Imp::atFrontmost() const {
     @autoreleasepool {
         NSRunningApplication * app = imp_->runningApp();
-        NSRunningApplication * front = Imp::frontmostApp();
+        NSRunningApplication * front = MacImp::frontmostApp();
         return [[app bundleURL] isEqualTo:[front bundleURL]];
     }
 }
 
 bool
-GKMacApp::running() const  {
+GKAppProxy::Imp::running() const  {
     @autoreleasepool {
         return nil != imp_->runningApp();
     }
 }
 
 GKErr
-GKMacApp::launch() {
+GKAppProxy::Imp::launch() {
     @autoreleasepool {
         NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
         
-        NSString * path = fromStdString(id_.path());
+        NSString * path = fromStdString(parent_->descriptor());
         NSURL * url = [workspace URLForApplicationWithBundleIdentifier:path];
         if (!url)
             url = [NSURL fileURLWithPath:path];
@@ -178,85 +153,31 @@ GKMacApp::launch() {
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////
-//                            GKMacAppFactory
 
-GKMacAppFactory::GKMacAppFactory() {
-}
-
-GKPtr<GKApp>
-GKMacAppFactory::getOrCreateApp(GKPtr<const GKAppId> appId) {
-    auto id = std::dynamic_pointer_cast<const GKMacAppId>(appId);
-    if (!id)
-        throwBadObjectType();
-    auto app = std::make_shared<GKMacApp>(*id);
-
-    // TODO: cache
-    return app;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-//                            GKMacConfig
-
-GKMacConfig::GKMacConfig()
-{
-    @autoreleasepool {
-        
-        NSArray * paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-        NSString * appDataFolder = [NSString pathWithComponents: [NSArray arrayWithObjects: paths.firstObject, @"GlobalKey", nil]];
-        
-        NSFileManager * fileManager= [NSFileManager defaultManager];
-        [fileManager createDirectoryAtPath:appDataFolder
-               withIntermediateDirectories:YES
-                                attributes:nil
-                                     error:nil];
-        
-        NSString * path = [NSString pathWithComponents: [NSArray arrayWithObjects: appDataFolder, @"Shortcuts.plist", nil]];
-        
-        file_ = toStdString(path);
-        
-        if (not [fileManager fileExistsAtPath:path]) {
-            NSDataAsset * templateData = [[NSDataAsset alloc] initWithName:@"ConfigTemplate"];
-            [templateData.data writeToFile:path atomically:YES];
-        }
-        
-        NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile:path];
-        
-        [dict enumerateKeysAndObjectsUsingBlock:^(NSString * key, NSString *  obj, BOOL * stop) {
-            Entry e;
-            e.keySequence = toStdString(key);
-            e.bundlePath = toStdString(obj);
-            entries_.push_back(e);
-        }];
-    }
-}
-
-std::string
-GKMacConfig::path() const {
-    return file_;
-}
-
-size_t
-GKMacConfig::appCount() const {
-    return entries_.size();
-}
-
-std::string
-GKMacConfig::appKeySequence(size_t index) const {
-    return entries_[index].keySequence;
-}
-
-GKPtr<const GKAppId>
-GKMacConfig::appId(size_t index) const {
-    return std::make_shared<GKMacAppId>(entries_[index].bundlePath);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-//                            GKMacSystem
+GKHotKey::Imp::Imp(GKHotKey * parent)
+: parent_(parent) {}
 
 void
-GKMacSystem::postNotification(const std::string & title, const std::string & message) {
+GKHotKey::Imp::registerHotKey() {
+    
+}
+
+void
+GKHotKey::Imp::unregisterHotKey() {
+    
+}
+
+GKHotKey::Ref
+GKHotKey::Imp::ref() const {
+    return nullptr;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//                            GKSystemImp
+
+void
+GKSystemImp::postNotification(const std::string & title, const std::string & message) {
     @autoreleasepool {
         NSUserNotification * notification = [[NSUserNotification alloc] init];
         notification.title = fromStdString(title);

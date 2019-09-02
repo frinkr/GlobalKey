@@ -73,13 +73,17 @@ namespace GKSystemService {
 
     void
     muteVolume() {
+#if GK_WIN
         Volume vol;
         vol.ep()->SetMute(TRUE, NULL);
+#endif
     }
 
     void
     unmuteVolume() {
+#if GK_WIN
         Volume vol;
         vol.ep()->SetMute(FALSE, NULL);
+#endif
     }
 }
