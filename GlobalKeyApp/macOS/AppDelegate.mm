@@ -13,8 +13,11 @@
 #include "GKSystem.h"
 
 @interface AppDelegate ()
-
-@property NSStatusItem * tray;
+{
+    NSStatusItem * tray;
+    NSMenuItem * enableItem;
+     BOOL enabled;
+}
 
 @end
 
@@ -23,13 +26,16 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     std::cout << "ello" << std::endl;
     
-    self.tray = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
-    self.tray.button.title = @"🐙";
+    tray = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+    tray.button.title = @"🐙";
+    
+    //self.tray.button.image = [NSImage imageNamed:@"AppIcon"];
     
     NSMenu * trayMenu = [[NSMenu alloc] initWithTitle:@"Tray"];
-    self.tray.menu = trayMenu;
+    tray.menu = trayMenu;
     
-    [[trayMenu addItemWithTitle:@"Enable" action:@selector(onEnableMenuItem:) keyEquivalent:@"e"] setTarget:self];
+    enableItem = [trayMenu addItemWithTitle:@"Enable" action:@selector(onEnableMenuItem:) keyEquivalent:@"e"] ;
+    [enableItem setTarget:self];
     [[trayMenu addItemWithTitle:@"Reload" action:@selector(onReloadMenuItem:) keyEquivalent:@"r"] setTarget: self];
     [[trayMenu addItemWithTitle:@"Edit Shortcuts" action:@selector(onEditMenuItem:) keyEquivalent:@""] setTarget:self];
     [trayMenu addItem:[NSMenuItem separatorItem]];
@@ -38,6 +44,9 @@
     
     [trayMenu setAutoenablesItems:FALSE];
     // Insert code here to initialize your application
+    
+    enabled = TRUE;
+    [self updateEnableMenuItemStatus:self];
 }
 
 
@@ -53,8 +62,19 @@
     return YES;
 }
 
+- (IBAction) updateEnableMenuItemStatus:(id)sender {
+    if (enabled) {
+        [enableItem setTitle:@"Disable"];
+    }
+    else {
+        
+        [enableItem setTitle:@"Enable"];
+    }
+    
+}
 - (IBAction) onEnableMenuItem:(id)sender {
-    GKSystem::postNotification("GlobalKey", "Enable");
+    enabled = !enabled;
+    [self updateEnableMenuItemStatus:self];
 }
 
 - (IBAction) onReloadMenuItem:(id)sender {
