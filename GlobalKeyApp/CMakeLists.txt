@@ -7,15 +7,13 @@ if(POLICY CMP0071)
 endif()
 
 set(SOURCES
-    GKCommand.h
-    GKCommand.cpp
-    GKAppConfig.h
-    GKAppConfig.cpp
-    GKAppHotKeyManager.h
-    GKAppHotKeyManager.cpp
-    GKSystemService.h
-    GKSystemService.cpp
-    json.hpp
+  GKCoreApp.h
+  GKCoreApp.cpp
+  GKCommand.h
+  GKCommand.cpp
+  GKSystemService.h
+  GKSystemService.cpp
+  json.hpp
   )
 
 if (WIN32)
@@ -26,7 +24,7 @@ if (WIN32)
     win32/main.cpp
     win32/Resource.h
     win32/Resource.rc
-  )
+    )
 else(APPLE)
   add_executable(
     ${PROJECT_NAME}
@@ -36,12 +34,11 @@ else(APPLE)
     macOS/AppDelegate.h
     macOS/AppDelegate.mm
     macOS/Assets.xcassets
-  )
+    )
   target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon")
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE GlobalKeyLib)
-
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/GlobalKeyLib)
 
 
@@ -77,8 +74,8 @@ if (APPLE)
     RESOURCE "macOS/Assets.xcassets"    
     )
 
-#  ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}
-#    POST_BUILD
-#    COMMAND /bin/bash ${CMAKE_CURRENT_SOURCE_DIR}/CopyLibs.sh "${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
-#  )
+  #  ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME}
+  #    POST_BUILD
+  #    COMMAND /bin/bash ${CMAKE_CURRENT_SOURCE_DIR}/CopyLibs.sh "${CMAKE_CURRENT_BINARY_DIR}/\${CONFIGURATION}/${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
+  #  )
 endif()

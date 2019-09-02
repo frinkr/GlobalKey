@@ -81,7 +81,6 @@ GKCommandEngine::createCommand(const std::string& commandName) const {
     return std::unique_ptr<GKCommand>();
 }
 
-
 void
 GKCommandEngine::regiseterCommand(const std::string& commandName, std::unique_ptr<GKCommand> commandPrototype) {
     commands_[commandName] = std::move(commandPrototype);
