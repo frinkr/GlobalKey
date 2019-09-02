@@ -1,5 +1,5 @@
 #pragma once
-
+#include <cstdint>
 #include <vector>
 
 #include "GK.h"
@@ -55,6 +55,10 @@ public:
     
 private:
     GKHotKey * parent_{};
+    
+    GKHotKey::Ref ref_ {};
+    uint32_t key_ {};
+    uint32_t mod_ {};
 };
 
 class GKSystemImp {

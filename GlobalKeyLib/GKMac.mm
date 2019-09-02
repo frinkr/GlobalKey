@@ -1,8 +1,11 @@
 #import <AppKit/AppKit.h>
 #import <Cocoa/Cocoa.h>
+#include <Carbon/Carbon.h>
+
 #include <array>
 #include <string_view>
 #include <stdexcept>
+#include <map>
 #include "GKMac.h"
 
 namespace {
@@ -10,11 +13,6 @@ namespace {
     fromStdString(const std::string & str) {
         return [NSString stringWithCString:str.c_str()
                                    encoding:[NSString defaultCStringEncoding]];
-    }
-
-    std::string
-    toStdString(NSString * str) {
-        return std::string([str UTF8String]);
     }
 }
 
@@ -154,22 +152,128 @@ GKAppProxy::Imp::launch() {
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////////
+//                             GKHotKey::Imp:
+
+namespace {
+    
+    
+    uint64_t
+    encodeEventHotKeyID(const EventHotKeyID & keyId) {
+        uint64_t v = keyId.signature;
+        v = v << 32;
+        v += keyId.id;
+        return v;
+    }
+    
+    class GKHotKeyManagerMac {
+    public:
+        static GKHotKeyManagerMac &
+        instance() {
+            static GKHotKeyManagerMac instance;
+            return instance;
+        }
+        
+        
+        static OSStatus hotkeyEventHandler(EventHandlerCallRef nextHandler, EventRef event, void* data)
+        {
+            if (GetEventClass(event) == kEventClassKeyboard &&
+                GetEventKind(event) == kEventHotKeyPressed) {
+                EventHotKeyID hkeyID;
+                GetEventParameter(event,
+                                  kEventParamDirectObject,
+                                  typeEventHotKeyID,
+                                  NULL,
+                                  sizeof(EventHotKeyID),
+                                  NULL,
+                                  &hkeyID);
+                
+                instance().invokeHotKey(hkeyID);
+            }
+            
+            return noErr;
+        }
+        
+        void installHotkeyEventHandler() {
+            if (hotkeyEventHandlerInstalled_)
+                return;
+            
+            hotkeyEventHandlerInstalled_ = true;
+            EventTypeSpec eventSpec;
+            eventSpec.eventClass = kEventClassKeyboard;
+            eventSpec.eventKind = kEventHotKeyPressed;
+            InstallApplicationEventHandler(&hotkeyEventHandler, 1, &eventSpec, NULL, NULL);
+        }
+        
+        void
+        addHotkey(EventHotKeyID id, GKHotKey * hotkey) {
+            registeredHotKeys_[encodeEventHotKeyID(id)] = hotkey;
+        }
+        
+        void
+        removeHotKey(GKHotKey * hotkey) {
+            for (auto itr = registeredHotKeys_.begin(); itr != registeredHotKeys_.end(); ++ itr) {
+                if (itr->second == hotkey) {
+                    registeredHotKeys_.erase(itr);
+                    break;
+                }
+            }
+        }
+        
+        void
+        invokeHotKey(EventHotKeyID keyId) {
+            uint64_t enc = encodeEventHotKeyID(keyId);
+            if (auto itr = registeredHotKeys_.find(enc); itr != registeredHotKeys_.end()) {
+                itr->second->invoke();
+            }
+            
+        }
+        
+    private:
+        bool hotkeyEventHandlerInstalled_ {false};
+        
+        std::map<uint64_t, GKHotKey *> registeredHotKeys_;
+    };
+    
+}
+
 GKHotKey::Imp::Imp(GKHotKey * parent)
-: parent_(parent) {}
+: parent_(parent) {
+    key_ = kVK_Space;
+    mod_ = controlKey;
+}
 
 void
 GKHotKey::Imp::registerHotKey() {
+    GKHotKeyManagerMac::instance().installHotkeyEventHandler();
     
+    EventHotKeyID hkeyID;
+    hkeyID.signature = key_;
+    hkeyID.id = mod_;
+    
+    EventHotKeyRef eventRef = 0;
+    [[maybe_unused]] OSStatus status = RegisterEventHotKey(key_,
+                                          mod_,
+                                          hkeyID,
+                                          GetApplicationEventTarget(),
+                                          0,
+                                          &eventRef);
+    
+    
+    ref_ = eventRef;
+    
+    GKHotKeyManagerMac::instance().addHotkey(hkeyID, parent_);
 }
 
 void
 GKHotKey::Imp::unregisterHotKey() {
-    
+    UnregisterEventHotKey(EventHotKeyRef(ref_));
+    GKHotKeyManagerMac::instance().removeHotKey(parent_);
 }
 
 GKHotKey::Ref
 GKHotKey::Imp::ref() const {
-    return nullptr;
+    return ref_;
 }
 
 

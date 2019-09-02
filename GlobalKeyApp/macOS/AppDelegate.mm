@@ -45,6 +45,7 @@
     [trayMenu setAutoenablesItems:FALSE];
     // Insert code here to initialize your application
     
+    GKAppHotKeyManager::instance().loadHotKeys();
     enabled = TRUE;
     [self updateEnableMenuItemStatus:self];
 }
@@ -64,10 +65,11 @@
 
 - (IBAction) updateEnableMenuItemStatus:(id)sender {
     if (enabled) {
+        GKAppHotKeyManager::instance().registerHotKeys();
         [enableItem setTitle:@"Disable"];
     }
     else {
-        
+        GKAppHotKeyManager::instance().unregisterHotKeys();
         [enableItem setTitle:@"Enable"];
     }
     

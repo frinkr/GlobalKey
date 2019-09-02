@@ -14,6 +14,8 @@ GKHotKey::GKHotKey(GKKeySequence commandKeySequence)
 {
 #if GK_WIN
     imp_ = std::make_unique<Imp>(this, GKHotKeyTargetHWND);
+#else
+    imp_ = std::make_unique<Imp>(this);
 #endif
 }
 

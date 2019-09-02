@@ -2,7 +2,7 @@
 
 #include "GKHotKey.h"
 
-class GKAppHotKeyManager {
+class GKAppHotKeyManager : private GKNoCopy {
 public:
     static GKAppHotKeyManager&
     instance();

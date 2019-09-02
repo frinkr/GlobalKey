@@ -37,7 +37,7 @@ else(APPLE)
     macOS/AppDelegate.mm
     macOS/Assets.xcassets
   )
-  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit")
+  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon")
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE GlobalKeyLib)
