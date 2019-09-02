@@ -32,7 +32,9 @@ else(APPLE)
     ${PROJECT_NAME}
     MACOSX_BUNDLE
     ${SOURCES}
-    macOS/main.cpp
+    macOS/main.mm
+    macOS/AppDelegate.h
+    macOS/AppDelegate.mm
     macOS/Assets.xcassets
   )
   target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit")
