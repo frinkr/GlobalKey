@@ -45,7 +45,6 @@ GKToggleAppCommand::run(const std::vector<std::string>& args) {
         appProxy->bringFront();
 }
 
-
 void
 GKSystemVolumeCommand::run(const std::vector<std::string>& args) {
     if (args.size() == 1) {
@@ -54,7 +53,6 @@ GKSystemVolumeCommand::run(const std::vector<std::string>& args) {
     }
 }
 
-
 GKCommandEngine&
 GKCommandEngine::instance() {
     static GKCommandEngine engine;
@@ -62,19 +60,29 @@ GKCommandEngine::instance() {
 }
 
 void
-GKCommandEngine::runCommand(const std::string& commandText) {
+GKCommandEngine::runCommand(const std::string& commandText) const {
     auto [cmd, args] = splitCommandText(commandText);
     if (auto task = createCommand(cmd))
         task->run(args);
     else
-        postNotification("Command ", cmd, " not found!");
+        postNotification("Command '", cmd, "' not found!");
 }
 
 std::unique_ptr<GKCommand>
-GKCommandEngine::createCommand(const std::string& taskName) {
-    if (taskName == "toggle")
-        return std::make_unique<GKToggleAppCommand>();
-    else if (taskName == "volume")
-        return std::make_unique<GKSystemVolumeCommand>();
+GKCommandEngine::createCommand(const std::string& commandName) const {
+    auto itr = commands_.find(commandName);
+    if (itr != commands_.end()) 
+        return itr->second->clone();
+    
+//    if (commandName == "toggle")
+//        return std::make_unique<GKToggleAppCommand>();
+//    else if (commandName == "volume")
+//        return std::make_unique<GKSystemVolumeCommand>();
     return std::unique_ptr<GKCommand>();
+}
+
+
+void
+GKCommandEngine::regiseterCommand(const std::string& commandName, std::unique_ptr<GKCommand> commandPrototype) {
+    commands_[commandName] = std::move(commandPrototype);
 }
