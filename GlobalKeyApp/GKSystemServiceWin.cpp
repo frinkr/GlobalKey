@@ -1,16 +1,10 @@
 #include "GKSystemService.h"
-
-#if GK_WIN
 #include <Windows.h>
 #include <Mmdeviceapi.h>
 #include <EndpointVolume.h>
-
 #pragma comment(lib, "Winmm.lib")
-#endif
 
-
-namespace {
-#if GK_WIN
+namespace GKSystemService {
     class Volume {
     public:
         Volume() {
@@ -48,12 +42,10 @@ namespace {
     private:
         IAudioEndpointVolume* endpointVolume {};
     };
-#endif
-}
-namespace GKSystemService {
+
     void
     adjustVolume(short value) {
-#if GK_WIN
+
         Volume vol;
         float currentVolume = 0;
         vol.ep()->GetMasterVolumeLevel(&currentVolume);
@@ -68,22 +60,18 @@ namespace GKSystemService {
         if (currentVolume < minDb) currentVolume = minDb;
         
         vol.ep()->SetMasterVolumeLevel((float)currentVolume, NULL);
-#endif
+
     }
 
     void
     muteVolume() {
-#if GK_WIN
         Volume vol;
         vol.ep()->SetMute(TRUE, NULL);
-#endif
     }
 
     void
     unmuteVolume() {
-#if GK_WIN
         Volume vol;
         vol.ep()->SetMute(FALSE, NULL);
-#endif
     }
 }

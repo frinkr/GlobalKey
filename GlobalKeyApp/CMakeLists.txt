@@ -12,7 +12,6 @@ set(SOURCES
   GKCommand.h
   GKCommand.cpp
   GKSystemService.h
-  GKSystemService.cpp
   json.hpp
   )
 
@@ -21,6 +20,7 @@ if (WIN32)
     ${PROJECT_NAME}
     WIN32
     ${SOURCES}
+    GKSystemServiceWin.cpp
     win32/main.cpp
     win32/Resource.h
     win32/Resource.rc
@@ -30,6 +30,7 @@ else(APPLE)
     ${PROJECT_NAME}
     MACOSX_BUNDLE
     ${SOURCES}
+    GKSystemServiceMac.cpp
     macOS/main.mm
     macOS/AppDelegate.h
     macOS/AppDelegate.mm
