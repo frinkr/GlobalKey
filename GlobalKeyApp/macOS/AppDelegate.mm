@@ -15,6 +15,7 @@
 {
     NSStatusItem * tray;
     NSMenuItem * enableItem;
+    NSMenuItem * reloadItem;
 }
 
 @end
@@ -22,50 +23,66 @@
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    std::cout << "ello" << std::endl;
-    
     tray = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
-    tray.button.title = @"🐙";
-    
-    //self.tray.button.image = [NSImage imageNamed:@"AppIcon"];
     
     NSMenu * trayMenu = [[NSMenu alloc] initWithTitle:@"Tray"];
+    [trayMenu setAutoenablesItems:FALSE];
+    
     tray.menu = trayMenu;
     
     enableItem = [trayMenu addItemWithTitle:@"Enable" action:@selector(onEnableMenuItem:) keyEquivalent:@"e"] ;
     [enableItem setTarget:self];
-    [[trayMenu addItemWithTitle:@"Reload" action:@selector(onReloadMenuItem:) keyEquivalent:@"r"] setTarget: self];
+    reloadItem = [trayMenu addItemWithTitle:@"Reload" action:@selector(onReloadMenuItem:) keyEquivalent:@"r"];
+    [reloadItem setTarget:self];
+    
     [[trayMenu addItemWithTitle:@"Edit Shortcuts" action:@selector(onEditMenuItem:) keyEquivalent:@""] setTarget:self];
     [trayMenu addItem:[NSMenuItem separatorItem]];
     [[trayMenu addItemWithTitle:@"About" action:@selector(onAboutMenuItem:) keyEquivalent:@""] setTarget:self];
     [[trayMenu addItemWithTitle:@"Quit" action:@selector(quit:) keyEquivalent:@"q"] setTarget:self];
     
-    [trayMenu setAutoenablesItems:FALSE];
-    // Insert code here to initialize your application
-    
     GKCoreApp::instance().reload(true);
-    [self updateEnableMenuItemStatus:self];
+    [self syncGUI:self];
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
 }
 
-- (IBAction) updateEnableMenuItemStatus:(id)sender {
-    if (GKCoreApp::instance().hotKeysRegistered()) {
-        [enableItem setTitle:@"Disable"];
-    }
-    else {
-        [enableItem setTitle:@"Enable"];
-    }
+- (IBAction) syncGUI:(id)sender {
+    BOOL enabled = GKCoreApp::instance().hotKeysRegistered();
     
+    // Update Icon
+    float iconSize = [[NSStatusBar systemStatusBar] thickness] - 2;
+    NSImage * trayIcon = [NSImage imageNamed:@"TrayIcon"];
+    [trayIcon setSize:CGSizeMake(iconSize, iconSize)];
+    if (!enabled) {
+        trayIcon = [trayIcon copy];
+        [trayIcon lockFocus];
+        NSColor * tint = [NSColor colorWithCalibratedWhite:0.33 alpha:1];
+        [tint set];
+        NSRect iconRect = {NSZeroPoint, [trayIcon size]};
+        NSRectFillUsingOperation(iconRect, NSCompositingOperationSourceAtop);
+        [trayIcon unlockFocus];
+        [trayIcon setTemplate:FALSE];
+    }
+    tray.button.image = trayIcon;
+    
+    // Update menu text
+    if (enabled)
+        [enableItem setTitle:@"Disable"];
+    else
+        [enableItem setTitle:@"Enable"];
+    
+    // Enable/Disable 'Reload'
+    [reloadItem setEnabled:enabled];
 }
+
 - (IBAction) onEnableMenuItem:(id)sender {
     if (GKCoreApp::instance().hotKeysRegistered())
         GKCoreApp::instance().unregisterHotKeys();
     else
         GKCoreApp::instance().registerHotKeys();
     
-    [self updateEnableMenuItemStatus:self];
+    [self syncGUI:self];
 }
 
 - (IBAction) onReloadMenuItem:(id)sender {

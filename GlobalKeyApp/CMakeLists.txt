@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-set(PROJECT_NAME GlobalKeyApp)
+set(PROJECT_NAME GlobalKey)
 project(${PROJECT_NAME})
 
 if(POLICY CMP0071)

@@ -49,10 +49,11 @@ GKCoreApp::reload(bool autoRegister) {
     loadConfig();
 
     // Reload hotkeys
+    auto enabled = hotKeysEnabled_;
     unregisterHotKeys();
     hotKeys_.clear();
     createHotKeys();
-    if (hotKeysEnabled_ || autoRegister)
+    if (enabled || autoRegister)
         registerHotKeys();
 }
 
