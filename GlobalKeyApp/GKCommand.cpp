@@ -1,7 +1,6 @@
 #include <vector>
 #include "GKProxyApp.h"
 #include "GKCommand.h"
-#include "GKSystem.h"
 #include "GKSystemService.h"
 
 namespace {
@@ -18,11 +17,6 @@ namespace {
         }
     }
 
-    template <typename ... T> void
-    postNotification(T ... args) {
-        auto message = (std::string() + ... + args);
-        GKSystem::postNotification("GlobalKey", message);
-    }
 }
 
 GK_REGISTER_COMMNAND("toggle", GKToggleAppCommand);
@@ -32,13 +26,13 @@ GKToggleAppCommand::run(const std::vector<std::string>& args) {
     auto appDesc = args.front();
     auto appProxy = std::make_shared<GKAppProxy>(appDesc);
     if (!appProxy) {
-        postNotification("Failed to find application ", appDesc);
+        GKSystemService::postNotification("Failed to find application ", appDesc);
         return;
     }
 
     if (!appProxy->running())
         if (GKErr::noErr != appProxy->launch()) {
-            postNotification("Failed to launch application ", appDesc);
+            GKSystemService::postNotification("Failed to launch application ", appDesc);
             return;
         }
     if (appProxy->atFrontmost())
@@ -70,7 +64,7 @@ GKCommandEngine::runCommand(const std::string& commandText) const {
     if (auto task = createCommand(cmd))
         task->run(args);
     else
-        postNotification("Command '", cmd, "' not found!");
+        GKSystemService::postNotification("Command '", cmd, "' not found!");
 }
 
 std::unique_ptr<GKCommand>

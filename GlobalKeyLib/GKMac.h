@@ -44,10 +44,10 @@ class GKHotKey::Imp {
 public:
     explicit Imp(GKHotKey * parent);
     
-    void
+    GKErr
     registerHotKey();
     
-    void
+    GKErr
     unregisterHotKey();
     
     GKHotKey::Ref
@@ -57,7 +57,7 @@ private:
     GKHotKey * parent_{};
     
     GKHotKey::Ref ref_ {};
-    uint32_t key_ {};
+    uint32_t key_ {};  // -1 means invalid
     uint32_t mod_ {};
 };
 

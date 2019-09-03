@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GKHotKey.h"
+#include "GKSystem.h"
 
 class GKCoreApp : private GKNoCopy {
 private:
@@ -18,7 +19,7 @@ public:
     configPath() const;
 
     void
-    reload();
+    reload(bool autoRegister);
 
     void
     registerHotKeys();
@@ -26,9 +27,12 @@ public:
     void
     unregisterHotKeys();
     
+    bool
+    hotKeysRegistered() const;
+    
     void
     invokeHotKey(GKHotKey::Ref hotKeyRef);
-
+    
 private:
     void
     loadConfig();
@@ -37,6 +41,7 @@ private:
     createHotKeys();
 
 private:
+    bool hotKeysEnabled_ {};
     std::vector<GKPtr<GKHotKey>> hotKeys_;
     std::string configFile_;
     std::vector<CommandEntry> entries_;

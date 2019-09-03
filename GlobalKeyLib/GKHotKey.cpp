@@ -9,8 +9,8 @@
 #endif
 
 
-GKHotKey::GKHotKey(GKKeySequence commandKeySequence)
-    : keySequence_(std::move(commandKeySequence))
+GKHotKey::GKHotKey(GKKeySequence keySequence)
+    : keySequence_(std::move(keySequence))
 {
 #if GK_WIN
     imp_ = std::make_unique<Imp>(this, GKHotKeyTargetHWND);
@@ -21,14 +21,34 @@ GKHotKey::GKHotKey(GKKeySequence commandKeySequence)
 
 GKHotKey::~GKHotKey() = default;
 
-void
-GKHotKey::registerHotKey() {
-    return imp_->registerHotKey();
+const GKKeySequence &
+GKHotKey::keySequence() const {
+    return keySequence_;
 }
 
-void
+GKErr
+GKHotKey::registerHotKey() {
+    if (registered_)
+        return GKErr::noErr;
+    
+    GKErr err = imp_->registerHotKey();
+    registered_ = (err == GKErr::noErr);
+    return err;
+}
+
+GKErr
 GKHotKey::unregisterHotKey() {
-    return imp_->unregisterHotKey();
+    if (!registered_)
+        return GKErr::noErr;
+    
+    GKErr err = imp_->unregisterHotKey();
+    registered_ = (err == GKErr::hotKeyCantUnregisteer);
+    return err;
+}
+
+bool
+GKHotKey::isRegistered() const {
+    return registered_;
 }
 
 void
@@ -52,7 +72,7 @@ GKHotKey::handler() const {
     return handler_;
 }
 
-std::pair<GKHotKeyModifier, std::string>
+std::optional<std::pair<GKHotKeyModifier, std::string> >
 GKSplitKeySequence(const GKKeySequence & commandKeySequence) {
     std::underlying_type_t<GKHotKeyModifier> modifiers = 0;
     std::string key;
@@ -71,8 +91,17 @@ GKSplitKeySequence(const GKKeySequence & commandKeySequence) {
             modifiers |= kALT;
         else if (item == "META")
             modifiers |= kMETA;
-        else
+#if GK_WIN
+        else if (item == "WIN")
+            modifiers |= kMETA;
+#elif GK_MAC
+        else if (item == "CMD")
+            modifiers |= kMETA;
+#endif
+        else if (key.empty())
             key = std::move(item);
+        else
+            return std::nullopt;
     }
     return std::make_pair(GKHotKeyModifier(modifiers), key);
 }

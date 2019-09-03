@@ -17,6 +17,22 @@
 template <typename T>
 using GKPtr = std::shared_ptr<T>;
 
+enum class GKErr : unsigned char {
+    noErr = 0,
+
+    appCantFound = 10,
+    appCantLaunch = 11,
+    appCantActivate = 12,
+    appNotRunning = 13,
+
+    hotKeySequenceNotValid = 30,
+    hotKeyCantRegister = 31,
+    hotKeyCantUnregisteer = 32,
+    hotKeyExists = 33,
+    
+    
+    notImplemented = 99,
+};
 
 class GKNoCopy {
 public:
@@ -25,3 +41,4 @@ protected:
     GKNoCopy(const GKNoCopy&) = delete;
     GKNoCopy& operator=(const GKNoCopy&) = delete;
 };
+

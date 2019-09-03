@@ -194,15 +194,18 @@ namespace {
             return noErr;
         }
         
-        void installHotkeyEventHandler() {
+        bool installHotkeyEventHandler() {
             if (hotkeyEventHandlerInstalled_)
-                return;
+                return true;
             
             hotkeyEventHandlerInstalled_ = true;
             EventTypeSpec eventSpec;
             eventSpec.eventClass = kEventClassKeyboard;
             eventSpec.eventKind = kEventHotKeyPressed;
-            InstallApplicationEventHandler(&hotkeyEventHandler, 1, &eventSpec, NULL, NULL);
+            if (InstallApplicationEventHandler(&hotkeyEventHandler, 1, &eventSpec, NULL, NULL))
+                return false;
+            else
+                return true;
         }
         
         void
@@ -235,40 +238,151 @@ namespace {
         std::map<uint64_t, GKHotKey *> registeredHotKeys_;
     };
     
+    uint32_t kVK_Invalid = -1;
+
+    std::pair<uint32_t, uint32_t>
+    parseKeySequence(const GKKeySequence& keySequence) {
+        auto p = GKSplitKeySequence(keySequence);
+        if (!p)
+            return {0, kVK_Invalid};
+        
+        auto [mod, key] = *p;
+
+        uint32_t macMod = 0;
+        if (mod & kSHIFT) macMod |= shiftKey;
+        if (mod & kALT) macMod |= optionKey;
+        if (mod & kCTRL) macMod |= controlKey;
+        if (mod & kMETA) macMod |= cmdKey;
+
+        static const std::map<std::string, uint32_t> map {
+            {"F1", kVK_F1},
+            {"F2", kVK_F2},
+            {"F3", kVK_F3},
+            {"F4", kVK_F4},
+            {"F5", kVK_F5},
+            {"F6", kVK_F6},
+            {"F7", kVK_F7},
+            {"F8", kVK_F8},
+            {"F9", kVK_F9},
+            {"F10", kVK_F10},
+            {"F11", kVK_F11},
+            {"F12", kVK_F12},
+            {"F13", kVK_F13},
+            {"F14", kVK_F14},
+            {"F15", kVK_F15},
+            {"F16", kVK_F16},
+            {"F17", kVK_F17},
+            {"F18", kVK_F18},
+            {"F19", kVK_F19},
+            {"F20", kVK_F20},
+            {"SPACE", kVK_Space},
+            {"LEFT", kVK_LeftArrow},
+            {"RIGHT", kVK_RightArrow},
+            {"DOWN", kVK_DownArrow},
+            {"UP", kVK_UpArrow},
+                };
+
+        if (auto itr = map.find(key); itr != map.end())
+            return { macMod, itr->second };
+
+        if (key.size() == 1) {
+
+            UTF16Char ch = key.front();
+
+            CFDataRef currentLayoutData;
+            TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
+
+            if (currentKeyboard == NULL)
+                return { 0, kVK_Invalid };
+
+            currentLayoutData = (CFDataRef)TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData);
+            CFRelease(currentKeyboard);
+            if (currentLayoutData == NULL)
+                return { 0, kVK_Invalid };
+
+            UCKeyboardLayout* header = (UCKeyboardLayout*)CFDataGetBytePtr(currentLayoutData);
+            UCKeyboardTypeHeader* table = header->keyboardTypeList;
+
+            uint8_t *data = (uint8_t*)header;
+            for (int32_t i=0; i < header->keyboardTypeCount; i++) {
+                UCKeyStateRecordsIndex* stateRec = 0;
+                if (table[i].keyStateRecordsIndexOffset != 0) {
+                    stateRec = reinterpret_cast<UCKeyStateRecordsIndex*>(data + table[i].keyStateRecordsIndexOffset);
+                    if (stateRec->keyStateRecordsIndexFormat != kUCKeyStateRecordsIndexFormat) stateRec = 0;
+                }
+
+                UCKeyToCharTableIndex* charTable = reinterpret_cast<UCKeyToCharTableIndex*>(data + table[i].keyToCharTableIndexOffset);
+                if (charTable->keyToCharTableIndexFormat != kUCKeyToCharTableIndexFormat) continue;
+
+                for (int32_t j=0; j < charTable->keyToCharTableCount; j++) {
+                    UCKeyOutput* keyToChar = reinterpret_cast<UCKeyOutput*>(data + charTable->keyToCharTableOffsets[j]);
+                    for (uint32_t vk=0; vk < charTable->keyToCharTableSize; vk++) {
+                        if (keyToChar[vk] & kUCKeyOutputTestForIndexMask) {
+                            long idx = keyToChar[vk] & kUCKeyOutputGetIndexMask;
+                            if (stateRec && idx < stateRec->keyStateRecordCount) {
+                                UCKeyStateRecord* rec = reinterpret_cast<UCKeyStateRecord*>(data + stateRec->keyStateRecordOffsets[idx]);
+                                if (rec->stateZeroCharData == ch)
+                                    return {macMod, vk};
+                            }
+                        }
+                        else if (!(keyToChar[vk] & kUCKeyOutputSequenceIndexMask) && keyToChar[vk] < 0xFFFE) {
+                            if (keyToChar[vk] == ch) 
+                                return {macMod, vk};
+                        }
+                    }
+                }
+            }
+        }
+        return { 0, kVK_Invalid };
+    }
 }
 
 GKHotKey::Imp::Imp(GKHotKey * parent)
 : parent_(parent) {
-    key_ = kVK_Space;
-    mod_ = controlKey;
+    std::tie(mod_, key_) = parseKeySequence(parent_->keySequence_);
 }
 
-void
+GKErr
 GKHotKey::Imp::registerHotKey() {
-    GKHotKeyManagerMac::instance().installHotkeyEventHandler();
+    if (key_ == kVK_Invalid)
+        return GKErr::hotKeySequenceNotValid;
+        
+    if (!GKHotKeyManagerMac::instance().installHotkeyEventHandler())
+        return GKErr::hotKeyCantRegister;
     
     EventHotKeyID hkeyID;
     hkeyID.signature = key_;
     hkeyID.id = mod_;
     
     EventHotKeyRef eventRef = 0;
-    [[maybe_unused]] OSStatus status = RegisterEventHotKey(key_,
+    OSStatus status = RegisterEventHotKey(key_,
                                           mod_,
                                           hkeyID,
                                           GetApplicationEventTarget(),
                                           0,
                                           &eventRef);
     
+    if (status == eventHotKeyExistsErr)
+        return GKErr::hotKeyExists;
+    if (status != 0)
+        return GKErr::hotKeyCantRegister;
     
     ref_ = eventRef;
-    
     GKHotKeyManagerMac::instance().addHotkey(hkeyID, parent_);
+    return GKErr::noErr;
 }
 
-void
+GKErr
 GKHotKey::Imp::unregisterHotKey() {
-    UnregisterEventHotKey(EventHotKeyRef(ref_));
+    if (key_ == kVK_Invalid)
+        return GKErr::noErr;
+    
+    OSStatus status = UnregisterEventHotKey(EventHotKeyRef(ref_));
+    if (status != 0)
+        return GKErr::hotKeyCantUnregisteer;
+    
     GKHotKeyManagerMac::instance().removeHotKey(parent_);
+    return GKErr::noErr;
 }
 
 GKHotKey::Ref

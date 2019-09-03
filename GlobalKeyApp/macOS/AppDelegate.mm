@@ -8,15 +8,13 @@
 
 #import "AppDelegate.h"
 #include <iostream>
-#include "../GKAppConfig.h"
-#include "../GKAppHotKeyManager.h"
+#include "../GKCoreApp.h"
 #include "GKSystem.h"
 
 @interface AppDelegate ()
 {
     NSStatusItem * tray;
     NSMenuItem * enableItem;
-     BOOL enabled;
 }
 
 @end
@@ -45,42 +43,33 @@
     [trayMenu setAutoenablesItems:FALSE];
     // Insert code here to initialize your application
     
-    GKAppHotKeyManager::instance().loadHotKeys();
-    enabled = TRUE;
+    GKCoreApp::instance().reload(true);
     [self updateEnableMenuItemStatus:self];
 }
 
-
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
-    // Insert code here to tear down your application
-    
-    std::cout << "word" << std::endl;
-}
-
-
-
-- (BOOL) validateMenuItem:(NSMenuItem *)menuItem {
-    return YES;
 }
 
 - (IBAction) updateEnableMenuItemStatus:(id)sender {
-    if (enabled) {
-        GKAppHotKeyManager::instance().registerHotKeys();
+    if (GKCoreApp::instance().hotKeysRegistered()) {
         [enableItem setTitle:@"Disable"];
     }
     else {
-        GKAppHotKeyManager::instance().unregisterHotKeys();
         [enableItem setTitle:@"Enable"];
     }
     
 }
 - (IBAction) onEnableMenuItem:(id)sender {
-    enabled = !enabled;
+    if (GKCoreApp::instance().hotKeysRegistered())
+        GKCoreApp::instance().unregisterHotKeys();
+    else
+        GKCoreApp::instance().registerHotKeys();
+    
     [self updateEnableMenuItemStatus:self];
 }
 
 - (IBAction) onReloadMenuItem:(id)sender {
-    GKSystem::postNotification("GlobalKey", "Reload");
+    GKCoreApp::instance().reload(false);
 }
 
 - (IBAction) onEditMenuItem:(id)sender {

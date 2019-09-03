@@ -4,16 +4,6 @@
 
 using GKAppDescriptor = std::string;
 
-enum class GKErr : unsigned char {
-    noErr = 0,
-
-    appCantFound = 10,
-    appCantLaunch = 11,
-    appCantActivate = 12,
-    appNotRunning = 13,
-
-    notImplemented = 99,
-};
 
 class GKAppProxy : private GKNoCopy {
 public:

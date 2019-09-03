@@ -1,7 +1,7 @@
 #include "json.hpp"
 #include "GKCommand.h"
 #include "GKCoreApp.h"
-
+#include "GKSystemService.h"
 using json = nlohmann::json;
 
 namespace {
@@ -16,8 +16,11 @@ namespace {
         };
 #else
         static json j{
-            { "F1", "toggle /Applications/Emacs.app" },
-            //{ "F2", "toggle devenv.exe" },
+            { "F1", "toggle org.gnu.Emacs" },
+            { "F2", "toggle /Applications/iTerm.app" },
+            { "F3", "toggle /Applications/Google Chrome.app" },
+            { "F4", "toggle com.apple.dt.Xcode"},
+            { "CTRLX+CMD+F", "toggle /Applications/Emacs.app" },
             //{ "CTRL+DOWN", "volume -5" },
             //{ "CTRL+UP", "volume +5" },
         };
@@ -40,7 +43,7 @@ GKCoreApp::configPath() const {
 }
 
 void
-GKCoreApp::reload() {
+GKCoreApp::reload(bool autoRegister) {
     // Reload config
     entries_.clear();
     loadConfig();
@@ -49,19 +52,32 @@ GKCoreApp::reload() {
     unregisterHotKeys();
     hotKeys_.clear();
     createHotKeys();
-    registerHotKeys();
+    if (hotKeysEnabled_ || autoRegister)
+        registerHotKeys();
 }
 
 void
 GKCoreApp::registerHotKeys() {
-    for (auto& hotKey : hotKeys_)
-        hotKey->registerHotKey();
+    for (auto& hotKey : hotKeys_) {
+        if (GKErr::noErr != hotKey->registerHotKey()) {
+            GKSystemService::postNotification(hotKey->keySequence(), " can't be registered");
+        }
+    }
+    hotKeysEnabled_ = true;
 }
 
 void
 GKCoreApp::unregisterHotKeys() {
-    for (auto& hotKey : hotKeys_)
-        hotKey->unregisterHotKey();
+    for (auto& hotKey : hotKeys_) {
+        if (GKErr::noErr != hotKey->unregisterHotKey())
+            GKSystemService::postNotification(hotKey->keySequence(), " can't be unregistered");
+    }
+    hotKeysEnabled_ = false;
+}
+
+bool
+GKCoreApp::hotKeysRegistered() const {
+    return hotKeysEnabled_;
 }
 
 void

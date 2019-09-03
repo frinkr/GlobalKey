@@ -1,5 +1,6 @@
 #pragma once
 #include "GK.h"
+#include "GKSystem.h"
 
 namespace GKSystemService {
     void
@@ -10,4 +11,10 @@ namespace GKSystemService {
 
     void
     unmuteVolume();
+
+    template <typename ... T> void
+    postNotification(T ... args) {
+        auto message = (std::string() + ... + args);
+        GKSystem::postNotification("GlobalKey", message);
+    }
 }

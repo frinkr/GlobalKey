@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <utility>
+#include <optional>
 
 #include "GK.h"
 
@@ -12,16 +13,22 @@ public:
     using Handler = std::function<void()>;
 
 public:
-    explicit GKHotKey(GKKeySequence commandKeySequence);
+    explicit GKHotKey(GKKeySequence keySequence);
 
     virtual ~GKHotKey();
 
-    virtual void
+    const GKKeySequence &
+    keySequence() const;
+    
+    virtual GKErr
     registerHotKey();
 
-    virtual void
+    virtual GKErr
     unregisterHotKey();
 
+    virtual bool
+    isRegistered() const;
+    
     virtual void
     invoke();
 
@@ -35,8 +42,9 @@ public:
     handler() const;
     
 protected:
-    Handler handler_;
-    GKKeySequence keySequence_;
+    Handler handler_ {};
+    GKKeySequence keySequence_ {};
+    bool registered_ {};
     class Imp;
     friend class Imp;
     std::unique_ptr<Imp> imp_;
@@ -49,5 +57,5 @@ enum GKHotKeyModifier {
     kMETA   =  kSHIFT << 3,
 };
 
-std::pair<GKHotKeyModifier, std::string>
+std::optional<std::pair<GKHotKeyModifier, std::string> >
 GKSplitKeySequence(const GKKeySequence& commandKeySequence);
