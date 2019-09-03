@@ -1,8 +1,11 @@
+#include <codecvt>
 #include <map>
 #include <Windows.h>
 #include <tlhelp32.h>
-
+#include <Shlobj.h>
 #include "GKWin.h"
+
+#pragma comment(lib, "Shell32.lib")
 
 
 namespace Win32 {
@@ -58,9 +61,13 @@ namespace Win32 {
         return pid;
     }
 
-    std::pair<UINT, UINT> 
+    std::pair<UINT, UINT>
     parseKeySequence(const GKKeySequence& commandKeySequence) {
-        auto [mod, key] = GKSplitKeySequence(commandKeySequence);
+        auto p = GKSplitKeySequence(commandKeySequence);
+        if (!p)
+            return { -1, -1 };
+
+        auto [mod, key] = *p;
 
         UINT winMod = MOD_NOREPEAT;
         if (mod & kSHIFT) winMod |= MOD_SHIFT;
@@ -110,10 +117,26 @@ namespace Win32 {
         if (auto itr = map.find(key); itr != map.end())
             return { winMod, itr->second };
         else
-            return { 0, 0 };
+            return { -1, -1 };
     }
 }
 
+namespace {
+    // convert UTF-8 string to wstring
+    std::wstring utf8ToWString(const std::string& str)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+        return myconv.from_bytes(str);
+    }
+
+    // convert wstring to UTF-8 string
+    std::string wStringToUtf8(const std::wstring& str)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+        return myconv.to_bytes(str);
+    }
+
+}
 GKAppProxy::Imp::Imp(GKAppProxy* parent)
     : parent_(parent) {}
 
@@ -203,16 +226,28 @@ GKHotKey::Imp::Imp(GKHotKey * parent, HWND hwnd)
     std::tie(modifiers_, virtualKey_) = Win32::parseKeySequence(parent_->keySequence_);
 }
 
-void 
+GKErr
 GKHotKey::Imp::registerHotKey()
 {
-    RegisterHotKey(hwnd_, reinterpret_cast<int>(ref()), modifiers_, virtualKey_);
+    if (virtualKey_ == -1)
+        return GKErr::hotKeySequenceNotValid;
+
+    if (RegisterHotKey(hwnd_, reinterpret_cast<int>(ref()), modifiers_, virtualKey_))
+        return GKErr::noErr;
+    else
+        return GKErr::hotKeyCantRegister;
 }
 
-void 
+GKErr
 GKHotKey::Imp::unregisterHotKey()
 {
-    UnregisterHotKey(hwnd_, reinterpret_cast<int>(ref()));
+    if (virtualKey_ == -1)
+        return GKErr::hotKeySequenceNotValid;
+
+    if (UnregisterHotKey(hwnd_, reinterpret_cast<int>(ref())))
+        return GKErr::noErr;
+    else
+        return GKErr::hotKeyCantUnregister;
 }
 
 GKHotKey::Ref
@@ -226,4 +261,22 @@ void
 GKSystemImp::postNotification(const std::string & title, const std::string & message) {
     ::MessageBoxA(NULL, message.c_str(), title.c_str(), MB_OK | MB_TOPMOST);
     // TODO:
+}
+
+std::string
+GKSystemImp::applicationSupportFolder() {
+    WCHAR szPath[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)))
+        return wStringToUtf8(szPath);
+    else
+        return std::string();
+}
+
+void
+GKSystemImp::revealFile(const std::string& file) {
+    auto fileW = utf8ToWString(file);
+    PIDLIST_ABSOLUTE pidl;
+    SHParseDisplayName(fileW.c_str(), nullptr, &pidl, 0, nullptr);
+    SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+    CoTaskMemFree(pidl);
 }

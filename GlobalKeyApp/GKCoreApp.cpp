@@ -108,7 +108,7 @@ GKCoreApp::invokeHotKey(GKHotKey::Ref hotKeyRef) {
 void
 GKCoreApp::loadConfig() {
     auto p = configFilePath();
-    configFile_ = p;
+    configFile_ = p.string();
 
     json j;
     if (std::filesystem::exists(p)) {

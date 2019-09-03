@@ -49,10 +49,10 @@ class GKHotKey::Imp {
 public:
     explicit Imp(GKHotKey * parent, HWND hwnd);
     
-    void
+    GKErr
     registerHotKey();
     
-    void
+    GKErr
     unregisterHotKey();
     
     GKHotKey::Ref
@@ -71,4 +71,10 @@ class GKSystemImp {
 public:
     static void
     postNotification(const std::string & title, const std::string & message);
+
+    static std::string
+    applicationSupportFolder();
+
+    static void
+    revealFile(const std::string& file);
 };

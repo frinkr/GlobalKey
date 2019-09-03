@@ -42,7 +42,7 @@ GKHotKey::unregisterHotKey() {
         return GKErr::noErr;
     
     GKErr err = imp_->unregisterHotKey();
-    registered_ = (err == GKErr::hotKeyCantUnregisteer);
+    registered_ = (err == GKErr::hotKeyCantUnregister);
     return err;
 }
 

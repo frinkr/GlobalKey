@@ -26,7 +26,7 @@ BOOL bEnabled;
 
 void LoadHotKeys() {
     GKHotKeyTargetHWND = hWnd;
-    GKCoreApp::instance().reload();
+    GKCoreApp::instance().reload(true);
 }
 
 BOOL RegisterHotKeys()
@@ -119,7 +119,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             DestroyWindow(hWnd);		// Destroy Window
             break;
         case ID_POPUP_RELOAD:
+            GKCoreApp::instance().reload(true);
+            break;
         case ID_POPUP_EDIT:
+            GKCoreApp::instance().revealConfigFile();
             break;
         case ID_POPUP_ABOUT:			// Open about box
             break;

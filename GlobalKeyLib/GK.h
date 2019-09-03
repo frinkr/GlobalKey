@@ -27,7 +27,7 @@ enum class GKErr : unsigned char {
 
     hotKeySequenceNotValid = 30,
     hotKeyCantRegister = 31,
-    hotKeyCantUnregisteer = 32,
+    hotKeyCantUnregister = 32,
     hotKeyExists = 33,
     
     
