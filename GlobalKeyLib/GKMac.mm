@@ -14,6 +14,11 @@ namespace {
         return [NSString stringWithCString:str.c_str()
                                    encoding:[NSString defaultCStringEncoding]];
     }
+
+    std::string
+    toStdString(NSString * str) {
+        return std::string([str UTF8String]);
+    }
 }
 
 
@@ -402,5 +407,21 @@ GKSystemImp::postNotification(const std::string & title, const std::string & mes
         notification.informativeText = fromStdString(message);
         notification.soundName = NSUserNotificationDefaultSoundName;
         [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
+    }
+}
+
+std::string
+GKSystemImp::applicationSupportFolder() {
+    @autoreleasepool {
+        NSArray * paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+        return toStdString([paths firstObject]);
+    }
+}
+
+void
+GKSystemImp::revealFile(const std::string & file) {
+    @autoreleasepool {
+        NSURL * fileURL = [NSURL fileURLWithPath:fromStdString(file)];
+        [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:[NSArray arrayWithObjects:fileURL, nil]];
     }
 }

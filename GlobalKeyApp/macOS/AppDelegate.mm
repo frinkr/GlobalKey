@@ -51,7 +51,7 @@
     BOOL enabled = GKCoreApp::instance().hotKeysRegistered();
     
     // Update Icon
-    float iconSize = [[NSStatusBar systemStatusBar] thickness] - 2;
+    float iconSize = [[NSStatusBar systemStatusBar] thickness] - 5;
     NSImage * trayIcon = [NSImage imageNamed:@"TrayIcon"];
     [trayIcon setSize:CGSizeMake(iconSize, iconSize)];
     if (!enabled) {
@@ -90,7 +90,7 @@
 }
 
 - (IBAction) onEditMenuItem:(id)sender {
-    GKSystem::postNotification("GlobalKey", "Edit");
+    GKCoreApp::instance().revealConfigFile();
 }
 
 - (IBAction) onAboutMenuItem:(id)sender {

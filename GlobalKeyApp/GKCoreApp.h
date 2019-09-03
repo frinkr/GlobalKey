@@ -19,6 +19,9 @@ public:
     configPath() const;
 
     void
+    revealConfigFile();
+
+    void
     reload(bool autoRegister);
 
     void

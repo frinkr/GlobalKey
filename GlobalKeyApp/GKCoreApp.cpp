@@ -1,4 +1,8 @@
+#include <filesystem>
+#include <fstream>
+
 #include "json.hpp"
+#include "GKSystem.h"
 #include "GKCommand.h"
 #include "GKCoreApp.h"
 #include "GKSystemService.h"
@@ -19,13 +23,18 @@ namespace {
             { "F1", "toggle org.gnu.Emacs" },
             { "F2", "toggle /Applications/iTerm.app" },
             { "F3", "toggle /Applications/Google Chrome.app" },
-            { "F4", "toggle com.apple.dt.Xcode"},
-            { "CTRLX+CMD+F", "toggle /Applications/Emacs.app" },
-            //{ "CTRL+DOWN", "volume -5" },
-            //{ "CTRL+UP", "volume +5" },
         };
 #endif
         return j;
+    }
+
+    std::filesystem::path
+    configFilePath() {
+        std::filesystem::path appSupport(GKSystem::applicationSupportFolder());
+        auto dir = appSupport / "GlobalKey";
+        if (!std::filesystem::exists(dir))
+            std::filesystem::create_directories(dir);
+        return dir / "GlobalKey.json";
     }
 }
 
@@ -36,6 +45,11 @@ GKCoreApp::instance() {
 }
 
 GKCoreApp::~GKCoreApp() = default;
+
+void
+GKCoreApp::revealConfigFile() {
+    GKSystem::revealFile(configFile_);
+}
 
 const std::string&
 GKCoreApp::configPath() const {
@@ -93,7 +107,20 @@ GKCoreApp::invokeHotKey(GKHotKey::Ref hotKeyRef) {
 
 void
 GKCoreApp::loadConfig() {
-    json j = sampleJson();
+    auto p = configFilePath();
+    configFile_ = p;
+
+    json j;
+    if (std::filesystem::exists(p)) {
+        std::ifstream ifs(p);
+        ifs >> j;
+    }
+    else {
+        j = sampleJson();
+        std::ofstream ofs(p);
+        ofs << std::setw(4) << j << std::endl;
+    }
+
     for (auto& kv : j.items())
         entries_.push_back({ kv.key(), kv.value().get<std::string>() });
 }

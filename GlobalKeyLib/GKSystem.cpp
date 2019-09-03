@@ -8,5 +8,15 @@
 
 void
 GKSystem::postNotification(const std::string& title, const std::string& message) {
-    GKSystemImp::postNotification(title, message);
+    return GKSystemImp::postNotification(title, message);
+}
+
+std::string
+GKSystem::applicationSupportFolder() {
+    return GKSystemImp::applicationSupportFolder();
+}
+
+void
+GKSystem::revealFile(const std::string & file) {
+    return GKSystemImp::revealFile(file);
 }
