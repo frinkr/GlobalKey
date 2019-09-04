@@ -30,13 +30,13 @@ else(APPLE)
     ${PROJECT_NAME}
     MACOSX_BUNDLE
     ${SOURCES}
-    GKSystemServiceMac.cpp
+    GKSystemServiceMac.mm
     macOS/main.mm
     macOS/AppDelegate.h
     macOS/AppDelegate.mm
     macOS/Assets.xcassets
     )
-  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon")
+  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox")
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE GlobalKeyLib)

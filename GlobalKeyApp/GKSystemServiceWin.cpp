@@ -55,9 +55,7 @@ namespace GKSystemService {
         
         float dbValue = (maxDb - minDb) * value / 100.0;
         currentVolume += dbValue;
-        
-        if (currentVolume > maxDb) currentVolume = maxDb;
-        if (currentVolume < minDb) currentVolume = minDb;
+        currentVolume = std::clamp(currentVolume, minDb, maxDb);
         
         vol.ep()->SetMasterVolumeLevel((float)currentVolume, NULL);
 
