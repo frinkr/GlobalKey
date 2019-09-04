@@ -36,7 +36,7 @@ else(APPLE)
     macOS/AppDelegate.mm
     macOS/Assets.xcassets
     )
-  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox")
+  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox -framework CoreAudio")
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE GlobalKeyLib)

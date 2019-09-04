@@ -1,22 +1,22 @@
 #import <AudioToolbox/AudioServices.h>
+#include <cmath>
 #include <algorithm>
 #include "GKSystemService.h"
 
-namespace {
-
+namespace Audio {
     AudioDeviceID defaultOutputDeviceID() {
         // get output device device
-        AudioObjectPropertyAddress propertyAOPA;
-        propertyAOPA.mScope = kAudioObjectPropertyScopeGlobal;
-        propertyAOPA.mElement = kAudioObjectPropertyElementMaster;
-        propertyAOPA.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+        AudioObjectPropertyAddress address;
+        address.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+        address.mScope = kAudioObjectPropertyScopeGlobal;
+        address.mElement = kAudioObjectPropertyElementMaster;
 	
-        if (!AudioHardwareServiceHasProperty(kAudioObjectSystemObject, &propertyAOPA))
+        if (!AudioObjectHasProperty(kAudioObjectSystemObject, &address))
             return kAudioObjectUnknown;
 
         AudioDeviceID outputDeviceID = kAudioObjectUnknown;
         UInt32 propertySize = sizeof(AudioDeviceID);
-        OSStatus status = AudioHardwareServiceGetPropertyData(kAudioObjectSystemObject, &propertyAOPA, 0, NULL, &propertySize, &outputDeviceID);
+        OSStatus status = AudioObjectGetPropertyData(kAudioObjectSystemObject, &address, 0, NULL, &propertySize, &outputDeviceID);
 	
         if(status) 
             return kAudioObjectUnknown;
@@ -29,20 +29,20 @@ namespace {
         AudioDeviceID outputDeviceID = defaultOutputDeviceID();
         if (outputDeviceID == kAudioObjectUnknown)
             return kAudioHardwareBadDeviceError;
-        AudioObjectPropertyAddress propertyAOPA;
-        propertyAOPA.mElement = kAudioObjectPropertyElementMaster;
-        propertyAOPA.mScope = kAudioDevicePropertyScopeOutput;
-        propertyAOPA.mSelector = property;
-        if (!AudioHardwareServiceHasProperty(outputDeviceID, &propertyAOPA))
+        AudioObjectPropertyAddress address;
+        address.mScope = kAudioDevicePropertyScopeOutput;
+        address.mSelector = property;
+        address.mElement = kAudioObjectPropertyElementMaster;
+        if (!AudioObjectHasProperty(outputDeviceID, &address))
             return kAudioHardwareUnknownPropertyError;
 
         Boolean canSet = NO;
-        OSStatus status = AudioHardwareServiceIsPropertySettable(outputDeviceID, &propertyAOPA, &canSet);
+        OSStatus status = AudioObjectIsPropertySettable(outputDeviceID, &address, &canSet);
         if (status || !canSet)
             return kAudioHardwareUnsupportedOperationError;
 
         UInt32 propertySize = sizeof(value);
-        return AudioHardwareServiceSetPropertyData(outputDeviceID, &propertyAOPA, 0, NULL, propertySize, &value);
+        return AudioObjectSetPropertyData(outputDeviceID, &address, 0, NULL, propertySize, &value);
     }
 
     template <typename T>
@@ -51,15 +51,15 @@ namespace {
         if (outputDeviceID == kAudioObjectUnknown)
             return kAudioHardwareBadDeviceError;
 
-        AudioObjectPropertyAddress propertyAOPA;
-        propertyAOPA.mElement = kAudioObjectPropertyElementMaster;
-        propertyAOPA.mSelector = property;
-        propertyAOPA.mScope = kAudioDevicePropertyScopeOutput;
-        if (!AudioHardwareServiceHasProperty(outputDeviceID, &propertyAOPA))
+        AudioObjectPropertyAddress address;
+        address.mSelector = property;
+        address.mScope = kAudioDevicePropertyScopeOutput;
+        address.mElement = kAudioObjectPropertyElementMaster;
+        if (!AudioObjectHasProperty(outputDeviceID, &address))
             return kAudioHardwareUnknownPropertyError;
 
         UInt32 propertySize = sizeof(value);
-        return AudioHardwareServiceGetPropertyData(outputDeviceID, &propertyAOPA, 0, NULL, &propertySize, &value);
+        return AudioObjectGetPropertyData(outputDeviceID, &address, 0, NULL, &propertySize, &value);
     }
 
     float getVolume() {
@@ -72,44 +72,50 @@ namespace {
         return outputVolume;
     }
 
+    bool isMuted() {
+        UInt32 muted = 0;
+        if (getAudioProperty(kAudioDevicePropertyMute, muted))
+            return false;
+        return muted;
+    }
+
     void mute() {
+        if (isMuted())
+            return;
         setAudioProperty<UInt32>(kAudioDevicePropertyMute, 1);
     }
 
     void unmute() {
-        setAudioProperty<UInt32>(kAudioDevicePropertyMute, 0);
+        if (isMuted())
+            setAudioProperty<UInt32>(kAudioDevicePropertyMute, 0);
     }
 
     void setVolume(Float32 newVolume) {
         if (newVolume < 0.0 || newVolume > 1.0)
             return;
-        
-        if (newVolume < 0.001) {
+        setAudioProperty<Float32>(kAudioHardwareServiceDeviceProperty_VirtualMasterVolume, newVolume);
+        if (newVolume < 0.001)
             mute();
-        }
-        else {
-            setAudioProperty<Float32>(kAudioHardwareServiceDeviceProperty_VirtualMasterVolume, newVolume);
+        else
             unmute();
-        }
     }
 }
 
 namespace GKSystemService {
     void
-        adjustVolume(short value) {
-        float d = value / 100.0;
-        float vol = getVolume();
-        vol = std::clamp(vol + d, 0.f, 1.f);
-        setVolume(vol);
+    adjustVolume(short value) {
+        short vol = std::roundf(Audio::getVolume() * 100);
+        vol = std::clamp(vol + value, 0, 100);
+        Audio::setVolume(vol / 100.0);
     }
 
     void
-        muteVolume() {
-        mute();
+    muteVolume() {
+        Audio::mute();
     }
 
     void
-        unmuteVolume() {
-        unmute();
+    unmuteVolume() {
+        Audio::unmute();
     }
 }
