@@ -109,13 +109,18 @@ namespace GKSystemService {
         Audio::setVolume(vol / 100.0);
     }
 
+    bool
+    audioMuted() {
+        return Audio::isMuted();
+    }
+
     void
-    muteVolume() {
+    muteAudio() {
         Audio::mute();
     }
 
     void
-    unmuteVolume() {
+    unmuteAudio() {
         Audio::unmute();
     }
 }

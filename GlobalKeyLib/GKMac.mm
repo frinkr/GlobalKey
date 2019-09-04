@@ -285,7 +285,9 @@ namespace {
             {"RIGHT", kVK_RightArrow},
             {"DOWN", kVK_DownArrow},
             {"UP", kVK_UpArrow},
-                };
+            {"PAGEUP", kVK_PageUp},
+            {"PAGEDOWN", kVK_PageDown},
+        };
 
         if (auto itr = map.find(key); itr != map.end())
             return { macMod, itr->second };

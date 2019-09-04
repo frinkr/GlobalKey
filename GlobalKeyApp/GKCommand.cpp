@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cctype>
 #include <vector>
 #include "GKProxyApp.h"
 #include "GKCommand.h"
@@ -10,6 +12,8 @@ namespace {
         if (pos != commandText.npos) {
             auto cmd = commandText.substr(0, pos);
             auto arg = commandText.substr(pos + 1);
+            
+            std::transform(cmd.begin(), cmd.end(), cmd.begin(), [](unsigned char c){ return std::tolower(c); });
             return { cmd, {arg} };
         }
         else {
@@ -22,7 +26,7 @@ namespace {
 GK_REGISTER_COMMNAND("toggle", GKToggleAppCommand);
 
 void
-GKToggleAppCommand::run(const std::vector<std::string>& args) {
+GKToggleAppCommand::run(const std::string & cmd, const std::vector<std::string>& args) {
     auto appDesc = args.front();
     auto appProxy = std::make_shared<GKAppProxy>(appDesc);
     if (!appProxy) {
@@ -42,13 +46,22 @@ GKToggleAppCommand::run(const std::vector<std::string>& args) {
 }
 
 
-GK_REGISTER_COMMNAND("volume", GKSystemVolumeCommand);
+GK_REGISTER_COMMNAND("volume", GKSystemCommand);
+GK_REGISTER_COMMNAND("mute", GKSystemCommand);
 
 void
-GKSystemVolumeCommand::run(const std::vector<std::string>& args) {
-    if (args.size() == 1) {
-        int value = std::stoi(args[0]);
-        GKSystemService::adjustVolume(value);
+GKSystemCommand::run(const std::string & cmd, const std::vector<std::string>& args) {
+    if (cmd == "volume") {
+        if (args.size() == 1) {
+            int value = std::stoi(args[0]);
+            GKSystemService::adjustVolume(value);
+        }
+    }
+    else if (cmd == "mute") {
+        if (GKSystemService::audioMuted())
+            GKSystemService::unmuteAudio();
+        else
+            GKSystemService::muteAudio();
     }
 }
 
@@ -62,7 +75,7 @@ void
 GKCommandEngine::runCommand(const std::string& commandText) const {
     auto [cmd, args] = splitCommandText(commandText);
     if (auto task = createCommand(cmd))
-        task->run(args);
+        task->run(cmd, args);
     else
         GKSystemService::postNotification("Command '", cmd, "' not found!");
 }

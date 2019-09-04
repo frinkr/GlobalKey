@@ -6,11 +6,14 @@ namespace GKSystemService {
     void
     adjustVolume(short value);
 
-    void
-    muteVolume();
+    bool
+    audioMuted();
 
     void
-    unmuteVolume();
+    muteAudio();
+
+    void
+    unmuteAudio();
 
     template <typename ... T> void
     postNotification(T ... args) {
