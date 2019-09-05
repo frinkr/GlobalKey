@@ -24,25 +24,25 @@ HINSTANCE hInst;
 NOTIFYICONDATA structNID;
 BOOL bEnabled;
 
-void LoadHotKeys() {
-    GKHotKeyTargetHWND = hWnd;
+void LoadHotkeys() {
+    GKHotkeyTargetHWND = hWnd;
     GKCoreApp::instance().reload();
 }
 
-BOOL RegisterHotKeys()
+BOOL RegisterHotkeys()
 {
-    GKCoreApp::instance().registerHotKeys();
+    GKCoreApp::instance().registerHotkeys();
     return TRUE;
 }
 
-BOOL UnRegisterHotKeys()
+BOOL UnRegisterHotkeys()
 {
-    GKCoreApp::instance().unregisterHotKeys();
+    GKCoreApp::instance().unregisterHotkeys();
     return TRUE;
 }
 
-BOOL OnHotKey(WPARAM wParam, LPARAM lParam) {
-    GKCoreApp::instance().invokeHotKey(GKHotKey::Ref(wParam));
+BOOL OnHotkey(WPARAM wParam, LPARAM lParam) {
+    GKCoreApp::instance().invokeHotkey(GKHotkey::Ref(wParam));
     return TRUE;
 }
 /* ================================================================================================================== */
@@ -126,15 +126,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         case ID_POPUP_ENABLE:			// Toggle Enable
             bEnabled = !bEnabled;
             if (bEnabled)
-                RegisterHotKeys();
+                RegisterHotkeys();
             else
-                UnRegisterHotKeys();
+                UnRegisterHotkeys();
 
             break;
         }
         break;
     case WM_HOTKEY:
-        OnHotKey(wParam, lParam);
+        OnHotkey(wParam, lParam);
         break;
     default:
         return DefWindowProc(hwnd, Message, wParam, lParam);
@@ -229,8 +229,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Set mode to enabled
     bEnabled = TRUE;
-    LoadHotKeys();
-    RegisterHotKeys();
+    LoadHotkeys();
+    RegisterHotkeys();
 
     // Message Loop
     while (GetMessage(&msg, NULL, 0, 0))

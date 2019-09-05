@@ -1,7 +1,21 @@
+#import <AppKit/AppKit.h>
 #import <AudioToolbox/AudioServices.h>
 #include <cmath>
 #include <algorithm>
 #include "GKSystemService.h"
+
+namespace {
+    NSString *
+    fromStdString(const std::string & str) {
+        return [NSString stringWithCString:str.c_str()
+                                  encoding:NSUTF8StringEncoding];
+    }
+
+    std::string
+    toStdString(NSString * str) {
+        return std::string([str UTF8String]);
+    }
+}
 
 namespace Audio {
     AudioDeviceID defaultOutputDeviceID() {
@@ -25,7 +39,7 @@ namespace Audio {
     }
 
     template <typename T>
-        OSStatus setAudioProperty(AudioObjectPropertySelector property, T value) {
+    OSStatus setAudioProperty(AudioObjectPropertySelector property, T value) {
         AudioDeviceID outputDeviceID = defaultOutputDeviceID();
         if (outputDeviceID == kAudioObjectUnknown)
             return kAudioHardwareBadDeviceError;
@@ -123,4 +137,25 @@ namespace GKSystemService {
     unmuteAudio() {
         Audio::unmute();
     }
+
+    void
+    open(const std::string & path) {
+        @autoreleasepool {
+            NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
+            NSURL * url = [NSURL fileURLWithPath:fromStdString(path)];
+            [workspace openURL:url];
+        }
+    }
+
+    void
+    openUrl(const std::string & url) {
+        @autoreleasepool {
+            NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
+            NSURL * nsUrl = [NSURL URLWithString:fromStdString(url)];
+            if (!nsUrl.scheme)
+                nsUrl = [NSURL URLWithString:fromStdString("http://" + url)];
+            [workspace openURL:nsUrl];
+        }
+    }
+
 }

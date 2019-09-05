@@ -48,7 +48,7 @@
 }
 
 - (IBAction) syncGUI:(id)sender {
-    BOOL enabled = GKCoreApp::instance().hotKeysRegistered();
+    BOOL enabled = GKCoreApp::instance().hotkeysRegistered();
     
     // Update Icon
     float iconSize = [[NSStatusBar systemStatusBar] thickness] - 5;
@@ -77,10 +77,10 @@
 }
 
 - (IBAction) onEnableMenuItem:(id)sender {
-    if (GKCoreApp::instance().hotKeysRegistered())
-        GKCoreApp::instance().unregisterHotKeys();
+    if (GKCoreApp::instance().hotkeysRegistered())
+        GKCoreApp::instance().unregisterHotkeys();
     else
-        GKCoreApp::instance().registerHotKeys();
+        GKCoreApp::instance().registerHotkeys();
     
     [self syncGUI:self];
 }

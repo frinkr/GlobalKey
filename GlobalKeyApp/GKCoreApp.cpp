@@ -63,43 +63,43 @@ GKCoreApp::reload(bool autoRegister) {
     loadConfig();
 
     // Reload hotkeys
-    auto enabled = hotKeysEnabled_;
-    unregisterHotKeys();
-    hotKeys_.clear();
-    createHotKeys();
+    auto enabled = hotkeysEnabled_;
+    unregisterHotkeys();
+    hotkeys_.clear();
+    createHotkeys();
     if (enabled || autoRegister)
-        registerHotKeys();
+        registerHotkeys();
 }
 
 void
-GKCoreApp::registerHotKeys() {
-    for (auto& hotKey : hotKeys_) {
-        if (GKErr::noErr != hotKey->registerHotKey()) {
-            GKSystemService::postNotification(hotKey->keySequence(), " can't be registered");
+GKCoreApp::registerHotkeys() {
+    for (auto& hotkey : hotkeys_) {
+        if (GKErr::noErr != hotkey->registerHotkey()) {
+            GKSystemService::postNotification(hotkey->keySequence(), " can't be registered");
         }
     }
-    hotKeysEnabled_ = true;
+    hotkeysEnabled_ = true;
 }
 
 void
-GKCoreApp::unregisterHotKeys() {
-    for (auto& hotKey : hotKeys_) {
-        if (GKErr::noErr != hotKey->unregisterHotKey())
-            GKSystemService::postNotification(hotKey->keySequence(), " can't be unregistered");
+GKCoreApp::unregisterHotkeys() {
+    for (auto& hotkey : hotkeys_) {
+        if (GKErr::noErr != hotkey->unregisterHotkey())
+            GKSystemService::postNotification(hotkey->keySequence(), " can't be unregistered");
     }
-    hotKeysEnabled_ = false;
+    hotkeysEnabled_ = false;
 }
 
 bool
-GKCoreApp::hotKeysRegistered() const {
-    return hotKeysEnabled_;
+GKCoreApp::hotkeysRegistered() const {
+    return hotkeysEnabled_;
 }
 
 void
-GKCoreApp::invokeHotKey(GKHotKey::Ref hotKeyRef) {
-    for (auto& hotKey : hotKeys_) {
-        if (hotKey->ref() == hotKeyRef) {
-            hotKey->invoke();
+GKCoreApp::invokeHotkey(GKHotkey::Ref hotkeyRef) {
+    for (auto& hotkey : hotkeys_) {
+        if (hotkey->ref() == hotkeyRef) {
+            hotkey->invoke();
             break;
         }
     }
@@ -110,28 +110,33 @@ GKCoreApp::loadConfig() {
     auto p = configFilePath();
     configFile_ = p;
 
-    json j;
-    if (std::filesystem::exists(p)) {
-        std::ifstream ifs(p);
-        ifs >> j;
-    }
-    else {
-        j = sampleJson();
-        std::ofstream ofs(p);
-        ofs << std::setw(4) << j << std::endl;
-    }
+    try {
+        json j;
+        if (std::filesystem::exists(p)) {
+            std::ifstream ifs(p);
+            ifs >> j;
+        }
+        else {
+            j = sampleJson();
+            std::ofstream ofs(p);
+            ofs << std::setw(4) << j << std::endl;
+        }
 
-    for (auto& kv : j.items())
-        entries_.push_back({ kv.key(), kv.value().get<std::string>() });
+        for (auto& kv : j.items())
+            entries_.push_back({ kv.key(), kv.value().get<std::string>() });
+    } catch(...) {
+        entries_.clear();
+        GKSystemService::postNotification("Failed to load config file, ", configFile_);
+    }
 }
 
 void
-GKCoreApp::createHotKeys() {
+GKCoreApp::createHotkeys() {
     for (auto& entry : entries_) {
-        GKPtr<GKHotKey> hotKey = std::make_shared<GKHotKey>(entry.commandKeySequence);
-        hotKey->setHandler([commandText = entry.commandText]() {
+        GKPtr<GKHotkey> hotkey = std::make_shared<GKHotkey>(entry.commandKeySequence);
+        hotkey->setHandler([commandText = entry.commandText]() {
             GKCommandEngine::instance().runCommand(commandText);
             });
-        hotKeys_.push_back(hotKey);
+        hotkeys_.push_back(hotkey);
     }
 }

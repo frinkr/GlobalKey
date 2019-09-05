@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <sstream>
-#include "GKHotKey.h"
+#include "GKHotkey.h"
 
 #if GK_MAC
 #  include "GKMac.h"
@@ -9,72 +9,72 @@
 #endif
 
 
-GKHotKey::GKHotKey(GKKeySequence keySequence)
+GKHotkey::GKHotkey(GKKeySequence keySequence)
     : keySequence_(std::move(keySequence))
 {
 #if GK_WIN
-    imp_ = std::make_unique<Imp>(this, GKHotKeyTargetHWND);
+    imp_ = std::make_unique<Imp>(this, GKHotkeyTargetHWND);
 #else
     imp_ = std::make_unique<Imp>(this);
 #endif
 }
 
-GKHotKey::~GKHotKey() = default;
+GKHotkey::~GKHotkey() = default;
 
 const GKKeySequence &
-GKHotKey::keySequence() const {
+GKHotkey::keySequence() const {
     return keySequence_;
 }
 
 GKErr
-GKHotKey::registerHotKey() {
+GKHotkey::registerHotkey() {
     if (registered_)
         return GKErr::noErr;
     
-    GKErr err = imp_->registerHotKey();
+    GKErr err = imp_->registerHotkey();
     registered_ = (err == GKErr::noErr);
     return err;
 }
 
 GKErr
-GKHotKey::unregisterHotKey() {
+GKHotkey::unregisterHotkey() {
     if (!registered_)
         return GKErr::noErr;
     
-    GKErr err = imp_->unregisterHotKey();
-    registered_ = (err == GKErr::hotKeyCantUnregisteer);
+    GKErr err = imp_->unregisterHotkey();
+    registered_ = (err == GKErr::hotkeyCantUnregisteer);
     return err;
 }
 
 bool
-GKHotKey::isRegistered() const {
+GKHotkey::isRegistered() const {
     return registered_;
 }
 
 void
-GKHotKey::invoke() {
+GKHotkey::invoke() {
     if (handler_)
         handler_();
 }
 
-GKHotKey::Ref
-GKHotKey::ref() const {
+GKHotkey::Ref
+GKHotkey::ref() const {
     return imp_->ref();
 }
 
 void
-GKHotKey::setHandler(Handler handler) {
+GKHotkey::setHandler(Handler handler) {
     handler_ = handler;
 }
 
-const GKHotKey::Handler&
-GKHotKey::handler() const {
+const GKHotkey::Handler&
+GKHotkey::handler() const {
     return handler_;
 }
 
-std::optional<std::pair<GKHotKeyModifier, std::string> >
+std::optional<std::pair<GKHotkeyModifier, std::string> >
 GKSplitKeySequence(const GKKeySequence & commandKeySequence) {
-    std::underlying_type_t<GKHotKeyModifier> modifiers = 0;
+    std::underlying_type_t<GKHotkeyModifier> modifiers = 0;
     std::string key;
 
     std::stringstream ss(commandKeySequence);
@@ -103,5 +103,5 @@ GKSplitKeySequence(const GKKeySequence & commandKeySequence) {
         else
             return std::nullopt;
     }
-    return std::make_pair(GKHotKeyModifier(modifiers), key);
+    return std::make_pair(GKHotkeyModifier(modifiers), key);
 }

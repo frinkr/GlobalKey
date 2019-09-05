@@ -20,7 +20,12 @@ namespace {
             return { commandText, {} };
         }
     }
+}
 
+
+void
+GKCommand::notifyBadCommand(const std::string & cmd, const std::vector<std::string> & args) {
+    GKSystemService::postNotification("Bad command '", cmd, "'");
 }
 
 GK_REGISTER_COMMNAND("toggle", GKToggleAppCommand);
@@ -48,6 +53,8 @@ GKToggleAppCommand::run(const std::string & cmd, const std::vector<std::string>&
 
 GK_REGISTER_COMMNAND("volume", GKSystemCommand);
 GK_REGISTER_COMMNAND("mute", GKSystemCommand);
+GK_REGISTER_COMMNAND("open", GKSystemCommand);
+GK_REGISTER_COMMNAND("openurl", GKSystemCommand);
 
 void
 GKSystemCommand::run(const std::string & cmd, const std::vector<std::string>& args) {
@@ -62,6 +69,18 @@ GKSystemCommand::run(const std::string & cmd, const std::vector<std::string>& ar
             GKSystemService::unmuteAudio();
         else
             GKSystemService::muteAudio();
+    }
+    else if (cmd == "open") {
+        if (args.empty())
+            notifyBadCommand(cmd, args);
+        else
+            GKSystemService::open(args[0]);
+    }
+    else if (cmd == "openurl") {
+        if (args.empty())
+            notifyBadCommand(cmd, args);
+        else
+            GKSystemService::openUrl(args[0]);
     }
 }
 

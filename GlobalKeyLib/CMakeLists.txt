@@ -5,8 +5,8 @@ set(SOURCES
   GK.h
   GKProxyApp.h
   GKProxyApp.cpp
-  GKHotKey.h
-  GKHotKey.cpp
+  GKHotkey.h
+  GKHotkey.cpp
   GKSystem.h
   GKSystem.cpp
   )

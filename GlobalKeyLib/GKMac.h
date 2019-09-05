@@ -4,7 +4,7 @@
 
 #include "GK.h"
 #include "GKProxyApp.h"
-#include "GKHotKey.h"
+#include "GKHotkey.h"
 
 class GKAppProxy::Imp{
 public:
@@ -40,23 +40,23 @@ private:
 };
 
 
-class GKHotKey::Imp {
+class GKHotkey::Imp {
 public:
-    explicit Imp(GKHotKey * parent);
+    explicit Imp(GKHotkey * parent);
     
     GKErr
-    registerHotKey();
+    registerHotkey();
     
     GKErr
-    unregisterHotKey();
+    unregisterHotkey();
     
-    GKHotKey::Ref
+    GKHotkey::Ref
     ref() const;
     
 private:
-    GKHotKey * parent_{};
+    GKHotkey * parent_{};
     
-    GKHotKey::Ref ref_ {};
+    GKHotkey::Ref ref_ {};
     uint32_t key_ {};  // -1 means invalid
     uint32_t mod_ {};
 };

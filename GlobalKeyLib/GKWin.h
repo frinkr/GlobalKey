@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include "GK.h"
 #include "GKProxyApp.h"
-#include "GKHotKey.h"
+#include "GKHotkey.h"
 #include "GKSystem.h"
 
 struct GKMainWindowData {
@@ -45,27 +45,27 @@ private:
     GKAppProxy* parent_{};
 };
 
-class GKHotKey::Imp {
+class GKHotkey::Imp {
 public:
-    explicit Imp(GKHotKey * parent, HWND hwnd);
+    explicit Imp(GKHotkey * parent, HWND hwnd);
     
     void
-    registerHotKey();
+    registerHotkey();
     
     void
-    unregisterHotKey();
+    unregisterHotkey();
     
-    GKHotKey::Ref
+    GKHotkey::Ref
     ref() const;
 
 private:
-    GKHotKey * parent_{};
+    GKHotkey * parent_{};
     HWND hwnd_{};
     UINT modifiers_{};
     UINT virtualKey_{};
 };
 
-extern HWND GKHotKeyTargetHWND;
+extern HWND GKHotkeyTargetHWND;
 
 class GKSystemImp {
 public:

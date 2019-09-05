@@ -11,6 +11,10 @@ public:
     
     virtual void
     run(const std::string & cmd, const std::vector<std::string> & args) = 0;
+
+protected:
+    void
+    notifyBadCommand(const std::string & cmd, const std::vector<std::string> & args);
 };
 
 template <typename T>
