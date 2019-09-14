@@ -7,24 +7,24 @@
 
 using GKKeySequence = std::string;
 
-class GKHotKey : private GKNoCopy {
+class GKHotkey : private GKNoCopy {
 public:
     using Ref = void *;
     using Handler = std::function<void()>;
 
 public:
-    explicit GKHotKey(GKKeySequence keySequence);
+    explicit GKHotkey(GKKeySequence keySequence);
 
-    virtual ~GKHotKey();
+    virtual ~GKHotkey();
 
     const GKKeySequence &
     keySequence() const;
     
     virtual GKErr
-    registerHotKey();
+    registerHotkey();
 
     virtual GKErr
-    unregisterHotKey();
+    unregisterHotkey();
 
     virtual bool
     isRegistered() const;
@@ -50,12 +50,12 @@ protected:
     std::unique_ptr<Imp> imp_;
 };
 
-enum GKHotKeyModifier {
+enum GKHotkeyModifier {
     kSHIFT  =  0x01000000,
     kCTRL   =  kSHIFT << 1,
     kALT    =  kSHIFT << 2,
     kMETA   =  kSHIFT << 3,
 };
 
-std::optional<std::pair<GKHotKeyModifier, std::string> >
+std::optional<std::pair<GKHotkeyModifier, std::string> >
 GKSplitKeySequence(const GKKeySequence& commandKeySequence);

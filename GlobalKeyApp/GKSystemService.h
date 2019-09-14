@@ -6,11 +6,20 @@ namespace GKSystemService {
     void
     adjustVolume(short value);
 
-    void
-    muteVolume();
+    bool
+    audioMuted();
 
     void
-    unmuteVolume();
+    muteAudio();
+
+    void
+    unmuteAudio();
+
+    void
+    open(const std::string & path);
+
+    void
+    openUrl(const std::string & url);
 
     template <typename ... T> void
     postNotification(T ... args) {

@@ -135,8 +135,8 @@ namespace {
         std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
         return myconv.to_bytes(str);
     }
-
 }
+
 GKAppProxy::Imp::Imp(GKAppProxy* parent)
     : parent_(parent) {}
 
@@ -219,7 +219,7 @@ GKAppProxy::Imp::update() const {
 }
 
 
-GKHotKey::Imp::Imp(GKHotKey * parent, HWND hwnd)
+GKHotkey::Imp::Imp(GKHotkey * parent, HWND hwnd)
     : parent_{parent}
     , hwnd_(hwnd)
 {
@@ -227,35 +227,35 @@ GKHotKey::Imp::Imp(GKHotKey * parent, HWND hwnd)
 }
 
 GKErr
-GKHotKey::Imp::registerHotKey()
+GKHotkey::Imp::registerHotkey()
 {
     if (virtualKey_ == -1)
-        return GKErr::hotKeySequenceNotValid;
+        return GKErr::hotkeySequenceNotValid;
 
     if (RegisterHotKey(hwnd_, reinterpret_cast<int>(ref()), modifiers_, virtualKey_))
         return GKErr::noErr;
     else
-        return GKErr::hotKeyCantRegister;
+        return GKErr::hotkeyCantRegister;
 }
 
 GKErr
-GKHotKey::Imp::unregisterHotKey()
+GKHotkey::Imp::unregisterHotkey()
 {
     if (virtualKey_ == -1)
-        return GKErr::hotKeySequenceNotValid;
+        return GKErr::hotkeySequenceNotValid;
 
     if (UnregisterHotKey(hwnd_, reinterpret_cast<int>(ref())))
         return GKErr::noErr;
     else
-        return GKErr::hotKeyCantUnregister;
+        return GKErr::hotkeyCantUnregisteer;
 }
 
-GKHotKey::Ref
-GKHotKey::Imp::ref() const {
-    return GKHotKey::Ref((modifiers_ << 16) + virtualKey_);
+GKHotkey::Ref
+GKHotkey::Imp::ref() const {
+    return GKHotkey::Ref((modifiers_ << 16) + virtualKey_);
 }
 
-HWND GKHotKeyTargetHWND  = 0;
+HWND GKHotkeyTargetHWND  = 0;
 
 void
 GKSystemImp::postNotification(const std::string & title, const std::string & message) {

@@ -25,10 +25,10 @@ enum class GKErr : unsigned char {
     appCantActivate = 12,
     appNotRunning = 13,
 
-    hotKeySequenceNotValid = 30,
-    hotKeyCantRegister = 31,
-    hotKeyCantUnregister = 32,
-    hotKeyExists = 33,
+    hotkeySequenceNotValid = 30,
+    hotkeyCantRegister = 31,
+    hotkeyCantUnregisteer = 32,
+    hotkeyExists = 33,
     
     
     notImplemented = 99,

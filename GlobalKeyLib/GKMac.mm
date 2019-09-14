@@ -12,7 +12,7 @@ namespace {
     NSString *
     fromStdString(const std::string & str) {
         return [NSString stringWithCString:str.c_str()
-                                   encoding:[NSString defaultCStringEncoding]];
+                                  encoding:NSUTF8StringEncoding];
     }
 
     std::string
@@ -158,24 +158,24 @@ GKAppProxy::Imp::launch() {
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-//                             GKHotKey::Imp:
+//                             GKHotkey::Imp:
 
 namespace {
     
     
     uint64_t
-    encodeEventHotKeyID(const EventHotKeyID & keyId) {
+    encodeEventHotkeyID(const EventHotKeyID & keyId) {
         uint64_t v = keyId.signature;
         v = v << 32;
         v += keyId.id;
         return v;
     }
     
-    class GKHotKeyManagerMac {
+    class GKHotkeyManagerMac {
     public:
-        static GKHotKeyManagerMac &
+        static GKHotkeyManagerMac &
         instance() {
-            static GKHotKeyManagerMac instance;
+            static GKHotkeyManagerMac instance;
             return instance;
         }
         
@@ -193,7 +193,7 @@ namespace {
                                   NULL,
                                   &hkeyID);
                 
-                instance().invokeHotKey(hkeyID);
+                instance().invokeHotkey(hkeyID);
             }
             
             return noErr;
@@ -214,24 +214,24 @@ namespace {
         }
         
         void
-        addHotkey(EventHotKeyID id, GKHotKey * hotkey) {
-            registeredHotKeys_[encodeEventHotKeyID(id)] = hotkey;
+        addHotkey(EventHotKeyID id, GKHotkey * hotkey) {
+            registeredHotkeys_[encodeEventHotkeyID(id)] = hotkey;
         }
         
         void
-        removeHotKey(GKHotKey * hotkey) {
-            for (auto itr = registeredHotKeys_.begin(); itr != registeredHotKeys_.end(); ++ itr) {
+        removeHotkey(GKHotkey * hotkey) {
+            for (auto itr = registeredHotkeys_.begin(); itr != registeredHotkeys_.end(); ++ itr) {
                 if (itr->second == hotkey) {
-                    registeredHotKeys_.erase(itr);
+                    registeredHotkeys_.erase(itr);
                     break;
                 }
             }
         }
         
         void
-        invokeHotKey(EventHotKeyID keyId) {
-            uint64_t enc = encodeEventHotKeyID(keyId);
-            if (auto itr = registeredHotKeys_.find(enc); itr != registeredHotKeys_.end()) {
+        invokeHotkey(EventHotKeyID keyId) {
+            uint64_t enc = encodeEventHotkeyID(keyId);
+            if (auto itr = registeredHotkeys_.find(enc); itr != registeredHotkeys_.end()) {
                 itr->second->invoke();
             }
             
@@ -240,7 +240,7 @@ namespace {
     private:
         bool hotkeyEventHandlerInstalled_ {false};
         
-        std::map<uint64_t, GKHotKey *> registeredHotKeys_;
+        std::map<uint64_t, GKHotkey *> registeredHotkeys_;
     };
     
     uint32_t kVK_Invalid = -1;
@@ -285,7 +285,9 @@ namespace {
             {"RIGHT", kVK_RightArrow},
             {"DOWN", kVK_DownArrow},
             {"UP", kVK_UpArrow},
-                };
+            {"PAGEUP", kVK_PageUp},
+            {"PAGEDOWN", kVK_PageDown},
+        };
 
         if (auto itr = map.find(key); itr != map.end())
             return { macMod, itr->second };
@@ -342,18 +344,18 @@ namespace {
     }
 }
 
-GKHotKey::Imp::Imp(GKHotKey * parent)
+GKHotkey::Imp::Imp(GKHotkey * parent)
 : parent_(parent) {
     std::tie(mod_, key_) = parseKeySequence(parent_->keySequence_);
 }
 
 GKErr
-GKHotKey::Imp::registerHotKey() {
+GKHotkey::Imp::registerHotkey() {
     if (key_ == kVK_Invalid)
-        return GKErr::hotKeySequenceNotValid;
+        return GKErr::hotkeySequenceNotValid;
         
-    if (!GKHotKeyManagerMac::instance().installHotkeyEventHandler())
-        return GKErr::hotKeyCantRegister;
+    if (!GKHotkeyManagerMac::instance().installHotkeyEventHandler())
+        return GKErr::hotkeyCantRegister;
     
     EventHotKeyID hkeyID;
     hkeyID.signature = key_;
@@ -368,30 +370,30 @@ GKHotKey::Imp::registerHotKey() {
                                           &eventRef);
     
     if (status == eventHotKeyExistsErr)
-        return GKErr::hotKeyExists;
+        return GKErr::hotkeyExists;
     if (status != 0)
-        return GKErr::hotKeyCantRegister;
+        return GKErr::hotkeyCantRegister;
     
     ref_ = eventRef;
-    GKHotKeyManagerMac::instance().addHotkey(hkeyID, parent_);
+    GKHotkeyManagerMac::instance().addHotkey(hkeyID, parent_);
     return GKErr::noErr;
 }
 
 GKErr
-GKHotKey::Imp::unregisterHotKey() {
+GKHotkey::Imp::unregisterHotkey() {
     if (key_ == kVK_Invalid)
         return GKErr::noErr;
     
     OSStatus status = UnregisterEventHotKey(EventHotKeyRef(ref_));
     if (status != 0)
-        return GKErr::hotKeyCantUnregisteer;
+        return GKErr::hotkeyCantUnregisteer;
     
-    GKHotKeyManagerMac::instance().removeHotKey(parent_);
+    GKHotkeyManagerMac::instance().removeHotkey(parent_);
     return GKErr::noErr;
 }
 
-GKHotKey::Ref
-GKHotKey::Imp::ref() const {
+GKHotkey::Ref
+GKHotkey::Imp::ref() const {
     return ref_;
 }
 

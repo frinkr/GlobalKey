@@ -1,8 +1,27 @@
 #include "GKSystemService.h"
+#include <codecvt>
+#include <algorithm>
 #include <Windows.h>
 #include <Mmdeviceapi.h>
 #include <EndpointVolume.h>
+#include <Shlobj.h>
+
 #pragma comment(lib, "Winmm.lib")
+#pragma comment(lib, "Shell32.lib")
+
+namespace {
+    // convert UTF-8 string to wstring
+    std::wstring utf8ToWString(const std::string& str) {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+        return myconv.from_bytes(str);
+    }
+
+    // convert wstring to UTF-8 string
+    std::string wStringToUtf8(const std::wstring& str) {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+        return myconv.to_bytes(str);
+    }
+}
 
 namespace GKSystemService {
     class Volume {
@@ -55,23 +74,41 @@ namespace GKSystemService {
         
         float dbValue = (maxDb - minDb) * value / 100.0;
         currentVolume += dbValue;
-        
-        if (currentVolume > maxDb) currentVolume = maxDb;
-        if (currentVolume < minDb) currentVolume = minDb;
+        currentVolume = std::clamp(currentVolume, minDb, maxDb);
         
         vol.ep()->SetMasterVolumeLevel((float)currentVolume, NULL);
 
     }
 
+    bool
+    audioMuted() {
+        BOOL m = FALSE;
+        Volume vol;
+        if (SUCCEEDED(vol.ep()->GetMute(&m)))
+            return m;
+        else
+            return false;
+    }
+    
     void
-    muteVolume() {
+    muteAudio() {
         Volume vol;
         vol.ep()->SetMute(TRUE, NULL);
     }
 
     void
-    unmuteVolume() {
+    unmuteAudio() {
         Volume vol;
         vol.ep()->SetMute(FALSE, NULL);
+    }
+
+    void
+    open(const std::string& path) {
+        ShellExecuteW(0, 0, utf8ToWString(path).c_str(), 0, 0, SW_SHOW);
+    }
+
+    void
+    openUrl(const std::string& url) {
+        open(url);
     }
 }
