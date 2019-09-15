@@ -3,10 +3,27 @@
 #include <Windows.h>
 #include <tlhelp32.h>
 #include <Shlobj.h>
+#include <tchar.h>
 #include "GKWin.h"
 
 #pragma comment(lib, "Shell32.lib")
 
+
+namespace {
+    // convert UTF-8 string to wstring
+    std::wstring utf8ToWString(const std::string& str)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+        return myconv.from_bytes(str);
+    }
+
+    // convert wstring to UTF-8 string
+    std::string wStringToUtf8(const std::wstring& str)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+        return myconv.to_bytes(str);
+    }
+}
 
 namespace Win32 {
     using DWORD = DWORD;
@@ -36,7 +53,7 @@ namespace Win32 {
         return data.windowHandle;
     }
 
-    DWORD GetProcessByName(PCSTR name) {
+    DWORD GetProcessByName(PCTCH name) {
         DWORD pid = 0;
 
         // Create toolhelp snapshot.
@@ -50,7 +67,7 @@ namespace Win32 {
             do {
                 // Compare process.szExeFile based on format of name, i.e., trim file path
                 // trim .exe if necessary, etc.
-                if (std::string(process.szExeFile) == std::string(name))
+                if (_tcscmp(process.szExeFile, name) == 0)
                 {
                     pid = process.th32ProcessID;
                     break;
@@ -118,22 +135,6 @@ namespace Win32 {
             return { winMod, itr->second };
         else
             return { -1, -1 };
-    }
-}
-
-namespace {
-    // convert UTF-8 string to wstring
-    std::wstring utf8ToWString(const std::string& str)
-    {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-        return myconv.from_bytes(str);
-    }
-
-    // convert wstring to UTF-8 string
-    std::string wStringToUtf8(const std::wstring& str)
-    {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-        return myconv.to_bytes(str);
     }
 }
 
@@ -211,7 +212,7 @@ GKAppProxy::Imp::launch() {
 
 void
 GKAppProxy::Imp::update() const {
-    data_.processId = Win32::GetProcessByName(parent_->descriptor_.c_str());
+    data_.processId = Win32::GetProcessByName(utf8ToWString(parent_->descriptor_).c_str());
     if (data_.processId)
         data_.windowHandle = Win32::findMainWinow(data_.processId);
     else

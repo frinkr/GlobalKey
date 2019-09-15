@@ -45,7 +45,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
     if (Message == WM_TASKBAR_CREATE) {			// Taskbar has been recreated (Explorer crashed?)
         // Display tray icon
         if (!Shell_NotifyIcon(NIM_ADD, &structNID)) {
-            MessageBox(NULL, "Systray Icon Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+            MessageBox(NULL, _T("Systray Icon Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
             DestroyWindow(hWnd);
             return -1;
         }
@@ -160,7 +160,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
     iccex.dwICC = ICC_UPDOWN_CLASS | ICC_LISTVIEW_CLASSES;
     if (!InitCommonControlsEx(&iccex)) {
-        MessageBox(NULL, "Cannot Initialize Common Controls!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        MessageBox(NULL, _T("Cannot Initialize Common Controls!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
 
@@ -175,18 +175,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     wc.lpszMenuName = NULL;
-    wc.lpszClassName = "GlobalKey Tray Application";
+    wc.lpszClassName = _T("GlobalKey Tray Application");
     wc.hIconSm = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));
     if (!RegisterClassEx(&wc)) {
-        MessageBox(NULL, "Window Registration Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        MessageBox(NULL, _T("Window Registration Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
 
     // Create the hidden window
     hWnd = CreateWindowEx(
         WS_EX_CLIENTEDGE,
-        "GlobalKey Tray Application",
-        "GlobalKey Tray Application Framework",
+        _T("GlobalKey Tray Application"),
+        _T("GlobalKey Tray Application Framework"),
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
@@ -197,7 +197,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         hInstance,
         NULL);
     if (hWnd == NULL) {
-        MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        MessageBox(NULL, _T("Window Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
 
@@ -206,13 +206,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     structNID.hWnd = (HWND)hWnd;
     structNID.uID = IDI_TRAYICON;
     structNID.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    strcpy(structNID.szTip, "GlobalKey");
+    _tcscpy(structNID.szTip, _T("GlobalKey"));
     structNID.hIcon = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));
     structNID.uCallbackMessage = WM_USER_SHELLICON;
 
     // Display tray icon
     if (!Shell_NotifyIcon(NIM_ADD, &structNID)) {
-        MessageBox(NULL, "Systray Icon Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
+        MessageBox(NULL, _T("Systray Icon Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
 
