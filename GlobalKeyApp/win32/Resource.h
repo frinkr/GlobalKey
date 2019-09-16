@@ -8,6 +8,7 @@
 #define IDD_ABOUT                       108
 #define ID_POPUP_RELOAD                 40001
 #define ID_POPUP_EDIT                   40002
+#define ID_POPUP_AUTOSTART              40003
 #define ID_POPUP_ENABLE                 40007
 #define ID_POPUP_EXIT                   40009
 #define ID_POPUP_ABOUT                  40011
@@ -17,7 +18,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        103
-#define _APS_NEXT_COMMAND_VALUE         40003
+#define _APS_NEXT_COMMAND_VALUE         40004
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

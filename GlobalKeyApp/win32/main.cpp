@@ -85,6 +85,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             else
                 CheckMenuItem(hMenu, ID_POPUP_ENABLE, MF_BYCOMMAND | MF_UNCHECKED);
 
+            if (GKCoreApp::instance().isAutoRunRegistered())
+                CheckMenuItem(hMenu, ID_POPUP_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
+            else
+                CheckMenuItem(hMenu, ID_POPUP_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
+
             // Display menu
             SetForegroundWindow(hWnd);
             TrackPopupMenu(hSubMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, lpClickPoint.x, lpClickPoint.y, 0, hWnd, NULL);
@@ -120,6 +125,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
                 GKCoreApp::instance().registerHotkeys();
 
             break;
+        case ID_POPUP_AUTOSTART:
+            if (GKCoreApp::instance().isAutoRunRegistered())
+                GKCoreApp::instance().unregisterAutoRun();
+            else
+                GKCoreApp::instance().registerAutoRun();
         }
         break;
     case WM_HOTKEY:

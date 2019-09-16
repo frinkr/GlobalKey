@@ -36,6 +36,17 @@ public:
     void
     invokeHotkey(GKHotkey::Ref hotkeyRef);
     
+#if GK_WIN
+    void
+    registerAutoRun();
+
+    void
+    unregisterAutoRun();
+
+    bool
+    isAutoRunRegistered();
+#endif
+
 private:
     void
     loadConfig();
