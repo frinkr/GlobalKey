@@ -33,7 +33,7 @@ GK_REGISTER_COMMNAND("toggle", GKToggleAppCommand);
 void
 GKToggleAppCommand::run(const std::string & cmd, const std::vector<std::string>& args) {
     auto appDesc = args.front();
-    auto appProxy = std::make_shared<GKAppProxy>(appDesc);
+    auto appProxy = std::make_shared<GKProxyApp>(appDesc);
     if (!appProxy) {
         GKSystemService::postNotification("Failed to find application ", appDesc);
         return;

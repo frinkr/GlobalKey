@@ -158,4 +158,30 @@ namespace GKSystemService {
         }
     }
 
+    std::string
+    applicationSupportFolder() {
+        @autoreleasepool {
+            NSArray * paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+            return toStdString([paths firstObject]);
+        }
+    }
+
+    void
+    revealFile(const std::string & file) {
+        @autoreleasepool {
+            NSURL * fileURL = [NSURL fileURLWithPath:fromStdString(file)];
+            [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:[NSArray arrayWithObjects:fileURL, nil]];
+        }
+    }
+
+    void
+    postNotification(const std::string & title, const std::string & message) {
+        @autoreleasepool {
+            NSUserNotification * notification = [[NSUserNotification alloc] init];
+            notification.title = fromStdString(title);
+            notification.informativeText = fromStdString(message);
+            notification.soundName = NSUserNotificationDefaultSoundName;
+            [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
+        }    
+    }
 }

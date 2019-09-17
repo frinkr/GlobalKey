@@ -1,6 +1,6 @@
 #pragma once
 #include "GK.h"
-#include "GKSystem.h"
+#include "GKCoreApp.h"
 
 namespace GKSystemService {
     void
@@ -21,9 +21,29 @@ namespace GKSystemService {
     void
     openUrl(const std::string & url);
 
+    std::string
+    applicationSupportFolder();
+
+    void
+    revealFile(const std::string & file);
+
+    void
+    postNotificationImp(const std::string& title, const std::string& message);
+
     template <typename ... T> void
     postNotification(T ... args) {
         auto message = (std::string() + ... + args);
-        GKSystem::postNotification("GlobalKey", message);
+        postNotification("GlobalKey", message);
     }
+
+#if GK_WIN
+    void
+    registerAutoRun();
+
+    void
+    unregisterAutoRun();
+
+    bool
+    isAutoRunRegistered();
+#endif
 }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "GKHotkey.h"
-#include "GKSystem.h"
+
+#define gkApp GKCoreApp::instance()
+#define GKAPP_NAME "GlobalKey"
 
 class GKCoreApp : private GKNoCopy {
 private:

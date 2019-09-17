@@ -5,12 +5,12 @@
 using GKAppDescriptor = std::string;
 
 
-class GKAppProxy : private GKNoCopy {
+class GKProxyApp : private GKNoCopy {
 public:
-    explicit GKAppProxy(const GKAppDescriptor& descriptor);
+    explicit GKProxyApp(const GKAppDescriptor& descriptor);
 
     virtual
-    ~GKAppProxy();
+    ~GKProxyApp();
 
     /**
      * The application identifier

@@ -25,11 +25,11 @@ NOTIFYICONDATA structNID;
 
 void initApp() {
     GKHotkeyTargetHWND = hWnd;
-    GKCoreApp::instance().reload(true);
+    gkApp.reload(true);
 }
 
 BOOL OnHotkey(WPARAM wParam, LPARAM lParam) {
-    GKCoreApp::instance().invokeHotkey(GKHotkey::Ref(wParam));
+    gkApp.invokeHotkey(GKHotkey::Ref(wParam));
     return TRUE;
 }
 /* ================================================================================================================== */
@@ -80,12 +80,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             }
 
             // Set Enabled State
-            if (GKCoreApp::instance().hotkeysRegistered())
+            if (gkApp.hotkeysRegistered())
                 CheckMenuItem(hMenu, ID_POPUP_ENABLE, MF_BYCOMMAND | MF_CHECKED);
             else
                 CheckMenuItem(hMenu, ID_POPUP_ENABLE, MF_BYCOMMAND | MF_UNCHECKED);
 
-            if (GKCoreApp::instance().isAutoRunRegistered())
+            if (gkApp.isAutoRunRegistered())
                 CheckMenuItem(hMenu, ID_POPUP_AUTOSTART, MF_BYCOMMAND | MF_CHECKED);
             else
                 CheckMenuItem(hMenu, ID_POPUP_AUTOSTART, MF_BYCOMMAND | MF_UNCHECKED);
@@ -111,25 +111,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             DestroyWindow(hWnd);		// Destroy Window
             break;
         case ID_POPUP_RELOAD:
-            GKCoreApp::instance().reload(true);
+            gkApp.reload(true);
             break;
         case ID_POPUP_EDIT:
-            GKCoreApp::instance().revealConfigFile();
+            gkApp.revealConfigFile();
             break;
         case ID_POPUP_ABOUT:			// Open about box
             break;
         case ID_POPUP_ENABLE:			// Toggle Enable
-            if (GKCoreApp::instance().hotkeysRegistered())
-                GKCoreApp::instance().unregisterHotkeys();
+            if (gkApp.hotkeysRegistered())
+                gkApp.unregisterHotkeys();
             else
-                GKCoreApp::instance().registerHotkeys();
+                gkApp.registerHotkeys();
 
             break;
         case ID_POPUP_AUTOSTART:
-            if (GKCoreApp::instance().isAutoRunRegistered())
-                GKCoreApp::instance().unregisterAutoRun();
+            if (gkApp.isAutoRunRegistered())
+                gkApp.unregisterAutoRun();
             else
-                GKCoreApp::instance().registerAutoRun();
+                gkApp.registerAutoRun();
         }
         break;
     case WM_HOTKEY:

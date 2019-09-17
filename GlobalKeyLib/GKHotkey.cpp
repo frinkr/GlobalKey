@@ -3,7 +3,7 @@
 #include "GKHotkey.h"
 
 #if GK_MAC
-#  include "GKMac.h"
+#  include "GKHotkeyMac.h"
 #elif GK_WIN
 #  include "GKWin.h"
 #endif

@@ -7,19 +7,21 @@ set(SOURCES
   GKProxyApp.cpp
   GKHotkey.h
   GKHotkey.cpp
-  GKSystem.h
-  GKSystem.cpp
   )
 
 if (WIN32)
   set(IMP_SOURCES
-    GKWin.h
-    GKWin.cpp
+    GKHotkeyWin.h
+    GKHotkeyWin.cpp
+    GKProxyAppWin.h
+    GKProxyAppWin.cpp
     )
 else(APPLE)
   set(IMP_SOURCES
-    GKMac.h
-    GKMac.mm
+    GKHotkeyMac.h
+    GKHotkeyMac.mm
+    GKProxyAppMac.h
+    GKProxyAppMac.mm
     )
 endif()
 

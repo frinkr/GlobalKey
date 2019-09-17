@@ -9,8 +9,7 @@
 #import "AppDelegate.h"
 #include <iostream>
 #include "../GKCoreApp.h"
-#include "GKSystem.h"
-
+#include "../GKSystemService.h"
 @interface AppDelegate ()
 {
     NSStatusItem * tray;
@@ -35,12 +34,12 @@
     reloadItem = [trayMenu addItemWithTitle:@"Reload" action:@selector(onReloadMenuItem:) keyEquivalent:@"r"];
     [reloadItem setTarget:self];
     
-    [[trayMenu addItemWithTitle:@"Edit Shortcuts" action:@selector(onEditMenuItem:) keyEquivalent:@""] setTarget:self];
+    [[trayMenu addItemWithTitle:@"Edit Hotkeys" action:@selector(onEditMenuItem:) keyEquivalent:@""] setTarget:self];
     [trayMenu addItem:[NSMenuItem separatorItem]];
     [[trayMenu addItemWithTitle:@"About" action:@selector(onAboutMenuItem:) keyEquivalent:@""] setTarget:self];
     [[trayMenu addItemWithTitle:@"Quit" action:@selector(quit:) keyEquivalent:@"q"] setTarget:self];
     
-    GKCoreApp::instance().reload(true);
+    gkApp.reload(true);
     [self syncGUI:self];
 }
 
@@ -48,7 +47,7 @@
 }
 
 - (IBAction) syncGUI:(id)sender {
-    BOOL enabled = GKCoreApp::instance().hotkeysRegistered();
+    BOOL enabled = gkApp.hotkeysRegistered();
     
     // Update Icon
     float iconSize = [[NSStatusBar systemStatusBar] thickness] - 5;
@@ -77,24 +76,24 @@
 }
 
 - (IBAction) onEnableMenuItem:(id)sender {
-    if (GKCoreApp::instance().hotkeysRegistered())
-        GKCoreApp::instance().unregisterHotkeys();
+    if (gkApp.hotkeysRegistered())
+        gkApp.unregisterHotkeys();
     else
-        GKCoreApp::instance().registerHotkeys();
+        gkApp.registerHotkeys();
     
     [self syncGUI:self];
 }
 
 - (IBAction) onReloadMenuItem:(id)sender {
-    GKCoreApp::instance().reload(false);
+    gkApp.reload(false);
 }
 
 - (IBAction) onEditMenuItem:(id)sender {
-    GKCoreApp::instance().revealConfigFile();
+    gkApp.revealConfigFile();
 }
 
 - (IBAction) onAboutMenuItem:(id)sender {
-    GKSystem::postNotification("GlobalKey", "About");
+    GKSystemService::postNotification("About");
 }
 
 - (IBAction) quit:(id)sender {

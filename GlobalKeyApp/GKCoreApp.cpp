@@ -2,7 +2,6 @@
 #include <fstream>
 
 #include "json.hpp"
-#include "GKSystem.h"
 #include "GKCommand.h"
 #include "GKCoreApp.h"
 #include "GKSystemService.h"
@@ -30,7 +29,7 @@ namespace {
 
     std::filesystem::path
     configFilePath() {
-        std::filesystem::path appSupport(GKSystem::applicationSupportFolder());
+        std::filesystem::path appSupport(GKSystemService::applicationSupportFolder());
         auto dir = appSupport / "GlobalKey";
         if (!std::filesystem::exists(dir))
             std::filesystem::create_directories(dir);
@@ -48,7 +47,7 @@ GKCoreApp::~GKCoreApp() = default;
 
 void
 GKCoreApp::revealConfigFile() {
-    GKSystem::revealFile(configFile_);
+    GKSystemService::revealFile(configFile_);
 }
 
 const std::string&
@@ -140,3 +139,20 @@ GKCoreApp::createHotkeys() {
         hotkeys_.push_back(hotkey);
     }
 }
+
+#if GK_WIN
+void
+GKCoreApp::registerAutoRun() {
+    GKSystemService::registerAutoRun();
+}
+
+void
+GKCoreApp::unregisterAutoRun() {
+    GKSystemService::unregisterAutoRun();
+}
+
+bool
+GKCoreApp::isAutoRunRegistered() {
+    return GKSystemService::isAutoRunRegistered();
+}
+#endif

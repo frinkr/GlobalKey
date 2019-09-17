@@ -3,52 +3,52 @@
 #if GK_WIN
 #  include "GKWin.h"
 #else
-#  include "GKMac.h"
+#  include "GKProxyAppMac.h"
 #endif
 
-GKAppProxy::GKAppProxy(const GKAppDescriptor& descriptor)
+GKProxyApp::GKProxyApp(const GKAppDescriptor& descriptor)
     : descriptor_(descriptor)
     , imp_{ std::make_unique<Imp>(this) }{
 }
 
-GKAppProxy::~GKAppProxy() = default;
+GKProxyApp::~GKProxyApp() = default;
 
 const GKAppDescriptor&
-GKAppProxy::descriptor() const {
+GKProxyApp::descriptor() const {
     return descriptor_;
 }
 
 GKErr
-GKAppProxy::bringFront() {
+GKProxyApp::bringFront() {
     return imp_->bringFront();
 }
 
 GKErr
-GKAppProxy::show() {
+GKProxyApp::show() {
     return imp_->show();
 }
 
 GKErr
-GKAppProxy::hide() {
+GKProxyApp::hide() {
     return imp_->hide();
 }
 
 bool
-GKAppProxy::visible() const {
+GKProxyApp::visible() const {
     return imp_->visible();
 }
 
 bool
-GKAppProxy::atFrontmost() const {
+GKProxyApp::atFrontmost() const {
     return imp_->atFrontmost();
 }
 
 bool
-GKAppProxy::running() const {
+GKProxyApp::running() const {
     return imp_->running();
 }
 
 GKErr
-GKAppProxy::launch() {
+GKProxyApp::launch() {
     return imp_->launch();
 }

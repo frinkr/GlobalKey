@@ -11,9 +11,9 @@ struct GKMainWindowData {
     HWND  windowHandle;
 };
 
-class GKAppProxy::Imp {
+class GKProxyApp::Imp {
 public:
-    explicit Imp(GKAppProxy* parent);
+    explicit Imp(GKProxyApp* parent);
 
     GKErr
     bringFront();
@@ -42,39 +42,5 @@ private:
 
 private:
     mutable GKMainWindowData data_{};
-    GKAppProxy* parent_{};
-};
-
-class GKHotkey::Imp {
-public:
-    explicit Imp(GKHotkey * parent, HWND hwnd);
-    
-    GKErr
-    registerHotkey();
-    
-    GKErr
-    unregisterHotkey();
-    
-    GKHotkey::Ref
-    ref() const;
-
-private:
-    GKHotkey * parent_{};
-    HWND hwnd_{};
-    UINT modifiers_{};
-    UINT virtualKey_{};
-};
-
-extern HWND GKHotkeyTargetHWND;
-
-class GKSystemImp {
-public:
-    static void
-    postNotification(const std::string & title, const std::string & message);
-
-    static std::string
-    applicationSupportFolder();
-
-    static void
-    revealFile(const std::string& file);
+    GKProxyApp* parent_{};
 };

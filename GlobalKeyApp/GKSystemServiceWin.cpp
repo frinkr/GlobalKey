@@ -25,7 +25,6 @@ namespace {
 
     std::wstring appExePath()  {
         TCHAR szFileName[MAX_PATH + 1];
-
         GetModuleFileName(NULL, szFileName, MAX_PATH + 1);
         return szFileName;
     }
@@ -119,31 +118,53 @@ namespace GKSystemService {
     openUrl(const std::string& url) {
         open(url);
     }
-}
 
+    void
+    postNotificationImp(const std::string & title, const std::string & message) {
+        ::MessageBoxA(NULL, message.c_str(), title.c_str(), MB_OK | MB_TOPMOST);
+        // TODO:
+    }
 
-void
-GKCoreApp::registerAutoRun() {
-    auto path = appExePath();
-    HKEY hkey = NULL;
-    RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-    RegSetValueEx(hkey, L"GlobalKey", 0, REG_SZ, (BYTE*)path.c_str(), (path.size() + 1) * 2);
-    RegCloseKey(hkey);
-}
+    std::string
+    applicationSupportFolder() {
+        WCHAR szPath[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)))
+            return wStringToUtf8(szPath);
+        else
+            return std::string();
+    }
 
-void
-GKCoreApp::unregisterAutoRun() {
-    HKEY hkey = NULL;
-    RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-    RegDeleteValue(hkey, L"GlobalKey");
-    RegCloseKey(hkey);
-}
+    void
+    revealFile(const std::string& file) {
+        auto fileW = utf8ToWString(file);
+        PIDLIST_ABSOLUTE pidl;
+        SHParseDisplayName(fileW.c_str(), nullptr, &pidl, 0, nullptr);
+        SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+        CoTaskMemFree(pidl);
+    }
 
-bool
-GKCoreApp::isAutoRunRegistered() {
-    TCHAR path[MAX_PATH + 1] = { 0 };
-    DWORD len = MAX_PATH + 1;
-    RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"GlobalKey", RRF_RT_REG_SZ, NULL, path, &len);
-    return path == appExePath();
-    return false;
+    void
+    registerAutoRun() {
+        auto path = appExePath();
+        HKEY hkey = NULL;
+        RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+        RegSetValueEx(hkey, L"GlobalKey", 0, REG_SZ, (BYTE*)path.c_str(), (path.size() + 1) * 2);
+        RegCloseKey(hkey);
+    }
+
+    void
+    unregisterAutoRun() {
+        HKEY hkey = NULL;
+        RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
+        RegDeleteValue(hkey, L"GlobalKey");
+        RegCloseKey(hkey);
+    }
+
+    bool
+    isAutoRunRegistered() {
+        TCHAR path[MAX_PATH + 1] = { 0 };
+        DWORD len = MAX_PATH + 1;
+        RegGetValue(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", L"GlobalKey", RRF_RT_REG_SZ, NULL, path, &len);
+        return path == appExePath();
+    }
 }
