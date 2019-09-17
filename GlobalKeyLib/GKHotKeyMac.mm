@@ -103,33 +103,33 @@ namespace {
         if (mod & kMETA) macMod |= cmdKey;
 
         static const std::map<std::string, uint32_t> map {
-            {"F1", kVK_F1},
-            {"F2", kVK_F2},
-            {"F3", kVK_F3},
-            {"F4", kVK_F4},
-            {"F5", kVK_F5},
-            {"F6", kVK_F6},
-            {"F7", kVK_F7},
-            {"F8", kVK_F8},
-            {"F9", kVK_F9},
-            {"F10", kVK_F10},
-            {"F11", kVK_F11},
-            {"F12", kVK_F12},
-            {"F13", kVK_F13},
-            {"F14", kVK_F14},
-            {"F15", kVK_F15},
-            {"F16", kVK_F16},
-            {"F17", kVK_F17},
-            {"F18", kVK_F18},
-            {"F19", kVK_F19},
-            {"F20", kVK_F20},
-            {"SPACE", kVK_Space},
-            {"LEFT", kVK_LeftArrow},
-            {"RIGHT", kVK_RightArrow},
-            {"DOWN", kVK_DownArrow},
-            {"UP", kVK_UpArrow},
-            {"PAGEUP", kVK_PageUp},
-            {"PAGEDOWN", kVK_PageDown},
+            {kF1, kVK_F1},
+            {kF2, kVK_F2},
+            {kF3, kVK_F3},
+            {kF4, kVK_F4},
+            {kF5, kVK_F5},
+            {kF6, kVK_F6},
+            {kF7, kVK_F7},
+            {kF8, kVK_F8},
+            {kF9, kVK_F9},
+            {kF10, kVK_F10},
+            {kF11, kVK_F11},
+            {kF12, kVK_F12},
+            {kF13, kVK_F13},
+            {kF14, kVK_F14},
+            {kF15, kVK_F15},
+            {kF16, kVK_F16},
+            {kF17, kVK_F17},
+            {kF18, kVK_F18},
+            {kF19, kVK_F19},
+            {kF20, kVK_F20},
+            {kSpace, kVK_Space},
+            {kLeft, kVK_LeftArrow},
+            {kRight, kVK_RightArrow},
+            {kDown, kVK_DownArrow},
+            {kUp, kVK_UpArrow},
+            {kPageUp, kVK_PageUp},
+            {kPageDown, kVK_PageDown},
         };
 
         if (auto itr = map.find(key); itr != map.end())
@@ -239,5 +239,3 @@ GKHotkey::Ref
 GKHotkey::Imp::ref() const {
     return ref_;
 }
-
-
