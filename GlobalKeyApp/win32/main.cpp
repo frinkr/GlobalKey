@@ -10,20 +10,21 @@
 #include "GK.h"
 #include "GKHotKeyWin.h"
 #include "..\GKCoreApp.h"
+#include "..\GKSystemService.h"
 
 // Libs
 #pragma comment(lib, "comctl32.lib")
 
 // Various consts & Defs
-#define	WM_USER_SHELLICON WM_USER + 1
+#define	WM_USER_SHELLICON WM_USER + 200
 #define WM_TASKBAR_CREATE RegisterWindowMessage(_T("TaskbarCreated"))
 
 // Globals
-HWND hWnd;
+HWND hWnd {};
 HINSTANCE hInst;
 NOTIFYICONDATA structNID;
 
-void initApp() {
+void initApp(HWND hWnd) {
     GKHotkeyTargetHWND = hWnd;
     gkApp.reload(true);
 }
@@ -32,13 +33,30 @@ BOOL OnHotkey(WPARAM wParam, LPARAM lParam) {
     gkApp.invokeHotkey(GKHotkey::Ref(wParam));
     return TRUE;
 }
+
+extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage)
+{
+    NOTIFYICONDATA nid;
+    memset(&nid, 0, sizeof(NOTIFYICONDATA));
+    nid.cbSize = sizeof(NOTIFYICONDATA);
+    nid.hWnd = hWnd;
+    nid.uID = IDI_TRAYICON;
+    nid.uFlags = NIF_INFO;
+    _tcscpy(nid.szInfo, pMessage);
+    _tcscpy(nid.szInfoTitle, pTitle);
+    nid.dwInfoFlags = NIIF_INFO;
+    nid.uTimeout = 15000;
+    Shell_NotifyIcon(NIM_MODIFY, &nid);
+}
+
+
 /* ================================================================================================================== */
 
 /*
   Name: ... WndProc(...)
   Desc: Main hidden "Window" that handles the messaging for our system tray
 */
-LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     POINT lpClickPoint;
 
@@ -117,6 +135,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
             gkApp.revealConfigFile();
             break;
         case ID_POPUP_ABOUT:			// Open about box
+            GKSystemService::postNotification("About");
             break;
         case ID_POPUP_ENABLE:			// Toggle Enable
             if (gkApp.hotkeysRegistered())
@@ -136,7 +155,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
         OnHotkey(wParam, lParam);
         break;
     default:
-        return DefWindowProc(hwnd, Message, wParam, lParam);
+        return DefWindowProc(hWnd, Message, wParam, lParam);
     }
     return 0;		// Return 0 = Message successfully proccessed
 }
@@ -212,21 +231,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // tray icon settings
+    memset(&structNID, 0, sizeof(NOTIFYICONDATA));
     structNID.cbSize = sizeof(NOTIFYICONDATA);
-    structNID.hWnd = (HWND)hWnd;
+    structNID.hWnd = hWnd;
     structNID.uID = IDI_TRAYICON;
     structNID.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    _tcscpy(structNID.szTip, _T("GlobalKey"));
-    structNID.hIcon = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));
     structNID.uCallbackMessage = WM_USER_SHELLICON;
-
-    // Display tray icon
+    structNID.hIcon = LoadIcon(hInst, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));;
+    _tcscpy(structNID.szTip, L"GlobalKey");
+    
     if (!Shell_NotifyIcon(NIM_ADD, &structNID)) {
         MessageBox(NULL, _T("Systray Icon Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
 
-    initApp();
+    initApp(hWnd);
 
     // Message Loop
     while (GetMessage(&msg, NULL, 0, 0))

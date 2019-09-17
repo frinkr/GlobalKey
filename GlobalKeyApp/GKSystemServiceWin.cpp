@@ -119,10 +119,11 @@ namespace GKSystemService {
         open(url);
     }
 
+    extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage);
+
     void
     postNotificationImp(const std::string & title, const std::string & message) {
-        ::MessageBoxA(NULL, message.c_str(), title.c_str(), MB_OK | MB_TOPMOST);
-        // TODO:
+        PostNotificationWinImp(utf8ToWString(title).c_str(), utf8ToWString(message).c_str());
     }
 
     std::string
