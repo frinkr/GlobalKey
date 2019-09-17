@@ -1,7 +1,7 @@
 #include "GKProxyApp.h"
 
 #if GK_WIN
-#  include "GKWin.h"
+#  include "GKProxyAppWin.h"
 #else
 #  include "GKProxyAppMac.h"
 #endif

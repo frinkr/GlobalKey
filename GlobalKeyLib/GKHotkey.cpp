@@ -5,7 +5,7 @@
 #if GK_MAC
 #  include "GKHotkeyMac.h"
 #elif GK_WIN
-#  include "GKWin.h"
+#  include "GKHotkeyWin.h"
 #endif
 
 

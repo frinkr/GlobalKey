@@ -4,7 +4,7 @@
 #include <tlhelp32.h>
 #include <Shlobj.h>
 #include <tchar.h>
-#include "GKWin.h"
+#include "GKProxyAppWin.h"
 
 #pragma comment(lib, "Shell32.lib")
 

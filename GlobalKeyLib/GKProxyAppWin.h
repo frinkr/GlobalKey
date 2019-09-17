@@ -1,10 +1,7 @@
 #pragma once
 
 #include <Windows.h>
-#include "GK.h"
 #include "GKProxyApp.h"
-#include "GKHotkey.h"
-#include "GKSystem.h"
 
 struct GKMainWindowData {
     DWORD processId;
