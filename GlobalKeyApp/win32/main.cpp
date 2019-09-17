@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 #include "GK.h"
-#include "GKWin.h"
+#include "GKHotKeyWin.h"
 #include "..\GKCoreApp.h"
 
 // Libs

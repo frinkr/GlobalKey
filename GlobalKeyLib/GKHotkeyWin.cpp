@@ -1,3 +1,4 @@
+#include <map>
 #include "GKHotkeyWin.h"
 
 namespace Win32 {
