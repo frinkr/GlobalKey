@@ -30,10 +30,10 @@ namespace {
     std::filesystem::path
     configFilePath() {
         std::filesystem::path appSupport(GKSystemService::applicationSupportFolder());
-        auto dir = appSupport / "GlobalKey";
+        auto dir = appSupport / GKAPP_NAME;
         if (!std::filesystem::exists(dir))
             std::filesystem::create_directories(dir);
-        return dir / "GlobalKey.json";
+        return dir / GKAPP_NAME ".json";
     }
 }
 

@@ -33,7 +33,7 @@ namespace GKSystemService {
     template <typename ... T> void
     postNotification(T ... args) {
         auto message = (std::string() + ... + args);
-        postNotificationImp("GlobalKey", message);
+        postNotificationImp(GKAPP_NAME, message);
     }
 
 #if GK_WIN

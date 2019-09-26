@@ -121,6 +121,8 @@ namespace GKSystemService {
         short vol = std::roundf(Audio::getVolume() * 100);
         vol = std::clamp(vol + value, 0, 100);
         Audio::setVolume(vol / 100.0);
+        
+        postNotification("Volume ", std::to_string(vol));
     }
 
     bool
@@ -175,12 +177,12 @@ namespace GKSystemService {
     }
 
     void
-    postNotification(const std::string & title, const std::string & message) {
+    postNotificationImp(const std::string & title, const std::string & message) {
         @autoreleasepool {
             NSUserNotification * notification = [[NSUserNotification alloc] init];
             notification.title = fromStdString(title);
             notification.informativeText = fromStdString(message);
-            notification.soundName = NSUserNotificationDefaultSoundName;
+            notification.soundName = nil;//NSUserNotificationDefaultSoundName;
             [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
         }    
     }
