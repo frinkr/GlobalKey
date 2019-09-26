@@ -56,7 +56,7 @@
     if (!enabled) {
         trayIcon = [trayIcon copy];
         [trayIcon lockFocus];
-        NSColor * tint = [NSColor colorWithCalibratedWhite:0.33 alpha:1];
+        NSColor * tint = [NSColor colorWithCalibratedWhite:0.0 alpha:0.618];
         [tint set];
         NSRect iconRect = {NSZeroPoint, [trayIcon size]};
         NSRectFillUsingOperation(iconRect, NSCompositingOperationSourceAtop);
