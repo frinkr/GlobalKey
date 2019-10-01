@@ -1,4 +1,5 @@
 #pragma once
+#include <sstream>
 #include "GK.h"
 #include "GKCoreApp.h"
 
@@ -32,8 +33,9 @@ namespace GKSystemService {
 
     template <typename ... T> void
     postNotification(T ... args) {
-        auto message = (std::string() + ... + args);
-        postNotificationImp(GKAPP_NAME, message);
+        std::stringstream ss;
+        (ss << ... << args);
+        postNotificationImp(GKAPP_NAME, ss.str());
     }
 
 #if GK_WIN

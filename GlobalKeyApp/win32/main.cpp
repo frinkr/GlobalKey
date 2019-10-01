@@ -19,10 +19,15 @@
 #define	WM_USER_SHELLICON WM_USER + 200
 #define WM_TASKBAR_CREATE RegisterWindowMessage(_T("TaskbarCreated"))
 
+#define NOTIF_TIMER_ID 50001
+
 // Globals
 HWND hWnd {};
 HINSTANCE hInst;
 NOTIFYICONDATA structNID;
+UINT_PTR notifTimerHandle{};
+std::wstring notifTitle;
+std::wstring notifMessage;
 
 void initApp(HWND hWnd) {
     GKHotkeyTargetHWND = hWnd;
@@ -34,8 +39,15 @@ BOOL OnHotkey(WPARAM wParam, LPARAM lParam) {
     return TRUE;
 }
 
-extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage)
+void TryPostNotification()
 {
+    KillTimer(hWnd, notifTimerHandle);
+
+    if (notifMessage.empty())
+        return;
+
+    LPCWSTR pTitle = notifTitle.c_str(), pMessage = notifMessage.c_str();
+
     NOTIFYICONDATA nid;
     memset(&nid, 0, sizeof(NOTIFYICONDATA));
     nid.cbSize = sizeof(NOTIFYICONDATA);
@@ -45,8 +57,18 @@ extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage)
     _tcscpy(nid.szInfo, pMessage);
     _tcscpy(nid.szInfoTitle, pTitle);
     nid.dwInfoFlags = NIIF_INFO;
-    nid.uTimeout = 15000;
+    nid.uTimeout = 2000;
     Shell_NotifyIcon(NIM_MODIFY, &nid);
+
+    notifMessage.clear();
+    notifTitle.clear();
+}
+
+extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage)
+{
+    notifTitle = pTitle;
+    notifMessage = pMessage;
+    notifTimerHandle = SetTimer(hWnd, NOTIF_TIMER_ID, 500, NULL);
 }
 
 
@@ -153,6 +175,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_HOTKEY:
         OnHotkey(wParam, lParam);
+        break;
+    case WM_TIMER:
+        TryPostNotification();
         break;
     default:
         return DefWindowProc(hWnd, Message, wParam, lParam);
