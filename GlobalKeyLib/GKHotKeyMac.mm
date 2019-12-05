@@ -137,6 +137,7 @@ namespace {
 
         if (key.size() == 1) {
 
+
             UTF16Char ch = key.front();
 
             CFDataRef currentLayoutData;

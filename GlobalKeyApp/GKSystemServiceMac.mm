@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include "GKSystemService.h"
+#import "macOS/AppDelegate.h"
 
 namespace {
     NSString *
@@ -179,11 +180,7 @@ namespace GKSystemService {
     void
     postNotificationImp(const std::string & title, const std::string & message) {
         @autoreleasepool {
-            NSUserNotification * notification = [[NSUserNotification alloc] init];
-            notification.title = fromStdString(title);
-            notification.informativeText = fromStdString(message);
-            notification.soundName = nil;//NSUserNotificationDefaultSoundName;
-            [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
+            [(AppDelegate*)NSApp.delegate postMessage: fromStdString(message) withTitle: fromStdString(title)];
         }    
     }
 }

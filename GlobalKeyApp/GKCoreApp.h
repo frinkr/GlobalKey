@@ -4,6 +4,7 @@
 
 #define gkApp GKCoreApp::instance()
 #define GKAPP_NAME "GlobalKey"
+#define GKAPP_URL "https://github.com/frinkr/GlobalKey"
 
 class GKCoreApp : private GKNoCopy {
 private:
