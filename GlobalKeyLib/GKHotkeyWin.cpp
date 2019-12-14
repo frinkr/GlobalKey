@@ -55,6 +55,8 @@ namespace Win32 {
             {kRight, VK_RIGHT},
             {kDown, VK_DOWN},
             {kUp, VK_UP},
+            {kPageDown, VK_NEXT},
+            {kPageUp, VK_PRIOR},
         };
 
         if (auto itr = map.find(key); itr != map.end())
