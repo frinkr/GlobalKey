@@ -41,6 +41,17 @@
     [bgColor set];
     [bgPath fill];
     
+    NSImage * trayIcon = [NSImage imageNamed:self.icon];
+    if (!trayIcon)
+        trayIcon = [NSImage imageNamed: @"AppIcon"];
+    CGFloat trayIconWidth = (rect.size.width * 0.65) * (trayIcon.size.width > trayIcon.size.height? 1: (trayIcon.size.width/trayIcon.size.height));
+    NSSize trayIconSize = NSMakeSize(trayIconWidth, trayIcon.size.height/trayIcon.size.width * trayIconWidth);
+    NSRect iconRect = NSMakeRect(rect.origin.x + (rect.size.width - trayIconSize.width) / 2,
+                                 rect.origin.y + (rect.size.height * 0.9 - trayIconSize.height),
+                                 trayIconSize.width,
+                                 trayIconSize.height);
+    [trayIcon drawInRect: iconRect];
+    
     if (self.message && self.title) {
         NSMutableParagraphStyle * paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
         [paragraphStyle setAlignment:NSTextAlignmentCenter];
@@ -52,7 +63,7 @@
         NSSize messageSize = [self.message sizeWithAttributes:attributes];
         
         [self.message drawInRect:NSMakeRect(rect.origin.x,
-                                            rect.origin.y + (rect.size.height - messageSize.height) / 2,
+                                            (iconRect.origin.y + rect.origin.y - messageSize.height) / 2,
                                             rect.size.width, messageSize.height)
                   withAttributes:attributes];
     }
@@ -66,6 +77,8 @@
     
     NSTimer * autoFadeoutTimer;
 }
+
+@property ToastMessageView * messageView;
 @end
 
 @implementation ToastMessageWindow
@@ -99,13 +112,16 @@
 +(ToastMessageWindow*) sharedInstance {
     static ToastMessageWindow * instance = NULL;
     if (instance == NULL) {
+        NSRect rect = NSMakeRect(0, 0, 200, 200);
         instance = [[ToastMessageWindow alloc]
-                       initWithContentRect:NSMakeRect(0, 0, 200, 200)
+                       initWithContentRect:rect
                                  styleMask:NSWindowStyleMaskBorderless
                                    backing:NSBackingStoreBuffered
                                      defer:NO];
-        [instance setContentView: [[ToastMessageView alloc] init]];
-        //[instance blurView: instance.contentView];
+        NSView * contentView = [[NSView alloc] initWithFrame:rect];
+        instance.messageView = [[ToastMessageView alloc] initWithFrame:rect];
+        [contentView addSubview:instance.messageView];
+        [instance setContentView:contentView];
     }
     return instance;
 }
@@ -134,14 +150,14 @@
     [blurView.layer setNeedsDisplay];
 }
 
-- (void)postMessage:(NSString*)message withTitle:(NSString*)title {
+- (void)postMessage:(NSString*)message withTitle:(NSString*)title andIcon:(NSString*)icon{
     [autoFadeoutTimer invalidate];
     
     // set view message
-    ToastMessageView* view = self.contentView;
-    view.message = message;
-    view.title = title;
-    [view setNeedsDisplay:TRUE];
+    self.messageView.message = message;
+    self.messageView.title = title;
+    self.messageView.icon = icon;
+    [self.messageView setNeedsDisplay:TRUE];
     
     // move to screen bottom center
     NSScreen * screen = [NSScreen mainScreen];

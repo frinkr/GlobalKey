@@ -123,7 +123,7 @@ namespace GKSystemService {
         vol = std::clamp(vol + value, 0, 100);
         Audio::setVolume(vol / 100.0);
         
-        postNotification("Volume ", std::to_string(vol));
+        postNotificationImp("Volume", "Volume " + std::to_string(vol), "vol");
     }
 
     bool
@@ -178,9 +178,9 @@ namespace GKSystemService {
     }
 
     void
-    postNotificationImp(const std::string & title, const std::string & message) {
+    postNotificationImp(const std::string & title, const std::string & message, const std::string & icon) {
         @autoreleasepool {
-            [(AppDelegate*)NSApp.delegate postMessage: fromStdString(message) withTitle: fromStdString(title)];
+            [(AppDelegate*)NSApp.delegate postMessage: fromStdString(message) withTitle: fromStdString(title) andIcon: fromStdString(icon)];
         }    
     }
 }

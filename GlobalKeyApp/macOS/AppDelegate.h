@@ -10,7 +10,7 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
-- (void)postMessage:(NSString*)message withTitle:(NSString*)title;
+- (void)postMessage:(NSString*)message withTitle:(NSString*)title andIcon:(NSString*)icon;
 
 @end
 

@@ -101,7 +101,7 @@
     [NSApp terminate:self];
 }
 
-- (void)postMessage:(NSString *)message withTitle:(NSString *)title {
+- (void)postMessage:(NSString *)message withTitle:(NSString *)title andIcon:(NSString *)icon{
 #if 0
                 NSUserNotification * notification = [[NSUserNotification alloc] init];
                 notification.title = title;
@@ -109,7 +109,7 @@
                 notification.soundName = nil;//NSUserNotificationDefaultSoundName;
                 [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
 #else
-    [[ToastMessageWindow sharedInstance] postMessage:message withTitle:title];
+    [[ToastMessageWindow sharedInstance] postMessage:message withTitle:title andIcon:icon];
     #endif
 }
 

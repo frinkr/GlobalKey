@@ -29,13 +29,13 @@ namespace GKSystemService {
     revealFile(const std::string & file);
 
     void
-    postNotificationImp(const std::string& title, const std::string& message);
+    postNotificationImp(const std::string& title, const std::string& message, const std::string & icon);
 
     template <typename ... T> void
     postNotification(T ... args) {
         std::stringstream ss;
         (ss << ... << args);
-        postNotificationImp(GKAPP_NAME, ss.str());
+        postNotificationImp(GKAPP_NAME, ss.str(), "");
     }
 
 #if GK_WIN
