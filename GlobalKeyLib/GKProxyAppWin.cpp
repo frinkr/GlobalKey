@@ -82,8 +82,12 @@ GKProxyApp::Imp::bringFront() {
     if (!running())
         return GKErr::appNotRunning;
 
-    ShowWindow(data_.windowHandle, SW_RESTORE);
-    SetForegroundWindow(data_.windowHandle);
+    auto hwnd = data_.windowHandle;
+
+    if (IsIconic(hwnd))
+        SendMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+    SetForegroundWindow(hwnd);
+    ShowWindow(hwnd, SW_SHOW);
     return GKErr::noErr;
 }
 
@@ -93,7 +97,7 @@ GKProxyApp::Imp::show() {
     if (!running())
         return GKErr::appNotRunning;
 
-    ShowWindow(data_.windowHandle, SW_RESTORE);
+    ShowWindow(data_.windowHandle, SW_SHOW);
     return GKErr::noErr;
 }
 
