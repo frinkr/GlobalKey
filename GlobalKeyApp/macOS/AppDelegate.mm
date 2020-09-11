@@ -10,6 +10,7 @@
 #include <iostream>
 #include "../GKCoreApp.h"
 #include "../GKSystemService.h"
+#import "ToastMessageWindow.h"
 @interface AppDelegate ()
 {
     NSStatusItem * tray;
@@ -93,10 +94,23 @@
 }
 
 - (IBAction) onAboutMenuItem:(id)sender {
-    GKSystemService::postNotification("About");
+    GKSystemService::openUrl(GKAPP_URL);
 }
 
 - (IBAction) quit:(id)sender {
     [NSApp terminate:self];
 }
+
+- (void)postMessage:(NSString *)message withTitle:(NSString *)title andIcon:(NSString *)icon{
+#if 0
+                NSUserNotification * notification = [[NSUserNotification alloc] init];
+                notification.title = title;
+                notification.informativeText = message;
+                notification.soundName = nil;//NSUserNotificationDefaultSoundName;
+                [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
+#else
+    [[ToastMessageWindow sharedInstance] postMessage:message withTitle:title andIcon:icon];
+    #endif
+}
+
 @end

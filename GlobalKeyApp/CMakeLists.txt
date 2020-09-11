@@ -34,9 +34,11 @@ else(APPLE)
     macOS/main.mm
     macOS/AppDelegate.h
     macOS/AppDelegate.mm
+    macOS/ToastMessageWindow.h
+    macOS/ToastMessageWindow.m
     macOS/Assets.xcassets
     )
-  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox -framework CoreAudio")
+  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox -framework CoreAudio -framework QuartzCore")
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE GlobalKeyLib)

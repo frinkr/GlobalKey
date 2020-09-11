@@ -31,9 +31,9 @@ namespace {
 }
 
 namespace GKSystemService {
-    class Volume {
+    class Audio {
     public:
-        Volume() {
+        Audio() {
             HRESULT hr;
 
             CoInitialize(NULL);
@@ -55,7 +55,7 @@ namespace GKSystemService {
             defaultDevice->Release();
         }
 
-        ~Volume() {
+        ~Audio() {
             if (endpointVolume)
                 endpointVolume->Release();
             CoUninitialize();
@@ -72,26 +72,22 @@ namespace GKSystemService {
     void
     adjustVolume(short value) {
 
-        Volume vol;
-        float currentVolume = 0;
-        vol.ep()->GetMasterVolumeLevel(&currentVolume);
-        
-        float minDb, maxDb, stepDb;
-        vol.ep()->GetVolumeRange(&minDb, &maxDb, &stepDb);
-        
-        float dbValue = (maxDb - minDb) * value / 100.0;
-        currentVolume += dbValue;
-        currentVolume = std::clamp(currentVolume, minDb, maxDb);
-        
-        vol.ep()->SetMasterVolumeLevel((float)currentVolume, NULL);
+        Audio audio;
 
+        float currentVolume = 0;
+        audio.ep()->GetMasterVolumeLevelScalar(&currentVolume);
+
+        currentVolume = std::clamp<float>((currentVolume * 100 + value) / 100, 0, 1);
+        audio.ep()->SetMasterVolumeLevelScalar(currentVolume, NULL);
+
+        postNotification("Volumne ", int(std::round(currentVolume * 100)));
     }
 
     bool
     audioMuted() {
         BOOL m = FALSE;
-        Volume vol;
-        if (SUCCEEDED(vol.ep()->GetMute(&m)))
+        Audio audio;
+        if (SUCCEEDED(audio.ep()->GetMute(&m)))
             return m;
         else
             return false;
@@ -99,14 +95,14 @@ namespace GKSystemService {
     
     void
     muteAudio() {
-        Volume vol;
-        vol.ep()->SetMute(TRUE, NULL);
+        Audio audio;
+        audio.ep()->SetMute(TRUE, NULL);
     }
 
     void
     unmuteAudio() {
-        Volume vol;
-        vol.ep()->SetMute(FALSE, NULL);
+        Audio audio;
+        audio.ep()->SetMute(FALSE, NULL);
     }
 
     void

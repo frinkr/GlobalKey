@@ -43,6 +43,7 @@ namespace Win32 {
             {kF16, VK_F16},
             {kF17, VK_F17},
             {kF18, VK_F18},
+
             {kF19, VK_F19},
             {kF20, VK_F20},
             {kF21, VK_F21},
@@ -54,6 +55,8 @@ namespace Win32 {
             {kRight, VK_RIGHT},
             {kDown, VK_DOWN},
             {kUp, VK_UP},
+            {kPageDown, VK_NEXT},
+            {kPageUp, VK_PRIOR},
         };
 
         if (auto itr = map.find(key); itr != map.end())
@@ -81,6 +84,7 @@ GKHotkey::Imp::registerHotkey()
     else
         return GKErr::hotkeyCantRegister;
 }
+
 
 GKErr
 GKHotkey::Imp::unregisterHotkey()
