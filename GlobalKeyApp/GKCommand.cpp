@@ -48,7 +48,7 @@ GKToggleAppCommand::run(const std::string & cmd, const std::vector<std::string>&
             
         }
     }
-    if (appProxy->atFrontmost())
+    if (appProxy->atFrontmost() && appProxy->visible())
         appProxy->hide();
     else
         appProxy->bringFront();

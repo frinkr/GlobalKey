@@ -1,6 +1,7 @@
 #import <AppKit/AppKit.h>
 #import <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
+#import <ApplicationServices/ApplicationServices.h>
 
 #include <array>
 #include <string_view>
@@ -13,6 +14,48 @@ namespace {
     fromStdString(const std::string & str) {
         return [NSString stringWithCString:str.c_str()
                                   encoding:NSUTF8StringEncoding];
+    }
+
+    void CFValueCast_Imp(CFTypeRef ref, GKOpt<bool> & out) {
+        if (CFGetTypeID(ref) == CFBooleanGetTypeID())
+            out = CFBooleanGetValue((CFBooleanRef)ref);
+    }
+        
+    template <typename T>
+    GKOpt<T> CFValueCast(CFTypeRef ref) {
+        GKOpt<T> val;
+        CFValueCast_Imp(ref, val);
+        return val;
+    }
+        
+    namespace aux {
+        template <typename T>
+        GKOpt<T> getValue(AXUIElementRef element, CFStringRef attr) {
+            CFTypeRef valueRef = nil;
+            if (!AXUIElementCopyAttributeValue(element, attr, &valueRef) && valueRef) {
+                GKOpt<T> value = CFValueCast<T>(valueRef);
+                CFRelease(valueRef);
+                return value;
+            }
+            return std::nullopt;
+        }
+
+        NSArray * getValues(AXUIElementRef element, CFStringRef attr) {
+            NSMutableArray * values = nil;
+            if (auto error = AXUIElementCopyAttributeValues(element, attr, 0, 100, (CFArrayRef *)&values); !error && values)
+                return [values autorelease];
+            else
+                return [[NSMutableArray alloc] init];
+        }
+        
+        template <typename T>
+        T getValueWithDefault(AXUIElementRef element, CFStringRef attr, T defaultValue) {
+            auto val = getValue<T>(element, attr);
+            if (val)
+                return *val;
+            else
+                return defaultValue;
+        }
     }
 }
 
@@ -82,18 +125,19 @@ GKProxyApp::Imp::bringFront() {
         NSWorkspaceOpenConfiguration * config = [NSWorkspaceOpenConfiguration configuration];
         config.allowsRunningApplicationSubstitution = FALSE;
         
-        [[NSWorkspace sharedWorkspace] openApplicationAtURL:[app bundleURL] configuration:config completionHandler:nil];
-        return GKErr::noErr;
+        
+        //return GKErr::noErr;
         
 //       NSRunningApplication.activateWithOptions doesn't restore a minimized app.
 //
-//        // NSApplicationActivateAllWindows not work for Emacs.app on 10.15 Beta (19A546d)
-//        if ([app activateWithOptions:NSApplicationActivateIgnoringOtherApps | NSApplicationActivateAllWindows]) {
-//            //[app unhide];
-//            return GKErr::noErr;
-//        }
-//        else
-//            return GKErr::appCantActivate;
+        // NSApplicationActivateAllWindows not work for Emacs.app on 10.15 Beta (19A546d)
+        if ([app activateWithOptions:NSApplicationActivateIgnoringOtherApps]) {
+            [[NSWorkspace sharedWorkspace] openApplicationAtURL:[app bundleURL] configuration:config completionHandler:nil];
+            //[app unhide];
+            return GKErr::noErr;
+        }
+        else
+            return GKErr::appCantActivate;
     }
 }
 
@@ -123,8 +167,18 @@ bool
 GKProxyApp::Imp::visible() const  {
     @autoreleasepool {
         NSRunningApplication * app = imp_->runningApp();
-        if (app)
-            return not [app isHidden];
+        if (app && not [app isHidden]) {
+            AXUIElementRef applicationRef = AXUIElementCreateApplication([app processIdentifier]);
+            NSArray * windows = aux::getValues(applicationRef, kAXWindowsAttribute);
+            bool minimized = false;
+            NSEnumerator * windowItr = [windows objectEnumerator];
+            while (AXUIElementRef windowRef = (__bridge AXUIElementRef)[windowItr nextObject]) {
+                minimized = aux::getValueWithDefault<bool>(windowRef, kAXMinimizedAttribute, false);
+                if (minimized)  // find one minimized window
+                    break;
+            }
+            return !minimized;
+        }
         else
             return false;
     }
