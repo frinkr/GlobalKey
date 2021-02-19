@@ -25,7 +25,7 @@ namespace {
 
 void
 GKCommand::notifyBadCommand(const std::string & cmd, const std::vector<std::string> & args) {
-    GKSystemService::postNotification("Bad command '", cmd, "'");
+    GKSystemService::showMessage("Bad command '", cmd, "'");
 }
 
 GK_REGISTER_COMMNAND("toggle", GKToggleAppCommand);
@@ -35,15 +35,19 @@ GKToggleAppCommand::run(const std::string & cmd, const std::vector<std::string>&
     auto appDesc = args.front();
     auto appProxy = std::make_shared<GKProxyApp>(appDesc);
     if (!appProxy) {
-        GKSystemService::postNotification("Failed to find application ", appDesc);
+        GKSystemService::showMessage("Failed to find application ", appDesc);
         return;
     }
 
-    if (!appProxy->running())
+    if (!appProxy->running()) {
         if (GKErr::noErr != appProxy->launch()) {
-            GKSystemService::postNotification("Failed to launch application ", appDesc);
+            GKSystemService::showMessage("Failed to launch application ", appDesc);
             return;
         }
+        else {
+            
+        }
+    }
     if (appProxy->atFrontmost())
         appProxy->hide();
     else
@@ -96,7 +100,7 @@ GKCommandEngine::runCommand(const std::string& commandText) const {
     if (auto task = createCommand(cmd))
         task->run(cmd, args);
     else
-        GKSystemService::postNotification("Command '", cmd, "' not found!");
+        GKSystemService::showMessage("Command '", cmd, "' not found!");
 }
 
 std::unique_ptr<GKCommand>
