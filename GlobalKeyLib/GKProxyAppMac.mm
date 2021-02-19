@@ -79,11 +79,21 @@ GKProxyApp::Imp::bringFront() {
         if (!app)
             return GKErr::appCantFound;
         
-        // NSApplicationActivateAllWindows not work for Emacs.app on 10.15 Beta (19A546d)
-        if ([app activateWithOptions:NSApplicationActivateIgnoringOtherApps])
-            return GKErr::noErr;
-        else
-            return GKErr::appCantActivate;
+        NSWorkspaceOpenConfiguration * config = [NSWorkspaceOpenConfiguration configuration];
+        config.allowsRunningApplicationSubstitution = FALSE;
+        
+        [[NSWorkspace sharedWorkspace] openApplicationAtURL:[app bundleURL] configuration:config completionHandler:nil];
+        return GKErr::noErr;
+        
+//       NSRunningApplication.activateWithOptions doesn't restore a minimized app.
+//
+//        // NSApplicationActivateAllWindows not work for Emacs.app on 10.15 Beta (19A546d)
+//        if ([app activateWithOptions:NSApplicationActivateIgnoringOtherApps | NSApplicationActivateAllWindows]) {
+//            //[app unhide];
+//            return GKErr::noErr;
+//        }
+//        else
+//            return GKErr::appCantActivate;
     }
 }
 
