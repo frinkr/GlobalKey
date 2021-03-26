@@ -23,9 +23,9 @@
 
 // Globals
 HWND hWnd {};
-HINSTANCE hInst;
-NOTIFYICONDATA structNID;
-UINT_PTR notifTimerHandle{};
+HINSTANCE hInst {};
+NOTIFYICONDATA structNID {};
+UINT_PTR notifTimerHandle {};
 std::wstring notifTitle;
 std::wstring notifMessage;
 
@@ -39,15 +39,8 @@ BOOL OnHotkey(WPARAM wParam, LPARAM lParam) {
     return TRUE;
 }
 
-void TryPostNotification()
+void PostNotification(LPCWSTR pTitle, LPCWSTR pMessage)
 {
-    KillTimer(hWnd, notifTimerHandle);
-
-    if (notifMessage.empty())
-        return;
-
-    LPCWSTR pTitle = notifTitle.c_str(), pMessage = notifMessage.c_str();
-
     NOTIFYICONDATA nid;
     memset(&nid, 0, sizeof(NOTIFYICONDATA));
     nid.cbSize = sizeof(NOTIFYICONDATA);
@@ -59,6 +52,17 @@ void TryPostNotification()
     nid.dwInfoFlags = NIIF_INFO;
     nid.uTimeout = 2000;
     Shell_NotifyIcon(NIM_MODIFY, &nid);
+}
+
+void TryPostNotification()
+{
+    KillTimer(hWnd, notifTimerHandle);
+
+    if (notifMessage.empty())
+        return;
+
+    PostNotification(L"", L""); // close existing ballon
+    PostNotification(notifTitle.c_str(), notifMessage.c_str());
 
     notifMessage.clear();
     notifTitle.clear();
@@ -78,20 +82,11 @@ extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage)
   Name: ... WndProc(...)
   Desc: Main hidden "Window" that handles the messaging for our system tray
 */
-LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     POINT lpClickPoint;
-
-    if (Message == WM_TASKBAR_CREATE) {			// Taskbar has been recreated (Explorer crashed?)
-        // Display tray icon
-        if (!Shell_NotifyIcon(NIM_ADD, &structNID)) {
-            MessageBox(NULL, _T("Systray Icon Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
-            DestroyWindow(hWnd);
-            return -1;
-        }
-    }
-
-    switch (Message)
+    
+    switch (message)
     {
     case WM_DESTROY:
         Shell_NotifyIcon(NIM_DELETE, &structNID);	// Remove Tray Item
@@ -104,7 +99,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         case WM_RBUTTONDOWN:
         {
             HMENU hMenu, hSubMenu;
-            // get mouse cursor position x and y as lParam has the Message itself
+            // get mouse cursor position x and y as lParam has the message itself
             GetCursorPos(&lpClickPoint);
 
             // Load menu resource
@@ -157,7 +152,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
             gkApp.revealConfigFile();
             break;
         case ID_POPUP_ABOUT:			// Open about box
-            GKSystemService::postNotification("About");
+            GKSystemService::showMessage("About");
             break;
         case ID_POPUP_ENABLE:			// Toggle Enable
             if (gkApp.hotkeysRegistered())
@@ -180,9 +175,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         TryPostNotification();
         break;
     default:
-        return DefWindowProc(hWnd, Message, wParam, lParam);
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
-    return 0;		// Return 0 = Message successfully proccessed
+    return 0;		// Return 0 = message successfully proccessed
 }
 
 /*
@@ -272,7 +267,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     initApp(hWnd);
 
-    // Message Loop
+    // message Loop
     while (GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
