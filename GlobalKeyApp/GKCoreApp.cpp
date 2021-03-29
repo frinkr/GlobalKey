@@ -74,7 +74,7 @@ void
 GKCoreApp::registerHotkeys() {
     for (auto& hotkey : hotkeys_) {
         if (GKErr::noErr != hotkey->registerHotkey()) {
-            GKSystemService::postNotification(hotkey->keySequence(), " can't be registered");
+            GKSystemService::showMessage(hotkey->keySequence(), " can't be registered");
         }
     }
     hotkeysEnabled_ = true;
@@ -84,7 +84,7 @@ void
 GKCoreApp::unregisterHotkeys() {
     for (auto& hotkey : hotkeys_) {
         if (GKErr::noErr != hotkey->unregisterHotkey())
-            GKSystemService::postNotification(hotkey->keySequence(), " can't be unregistered");
+            GKSystemService::showMessage(hotkey->keySequence(), " can't be unregistered");
     }
     hotkeysEnabled_ = false;
 }
@@ -125,7 +125,7 @@ GKCoreApp::loadConfig() {
             entries_.push_back({ kv.key(), kv.value().get<std::string>() });
     } catch(...) {
         entries_.clear();
-        GKSystemService::postNotification("Failed to load config file, ", configFile_);
+        GKSystemService::showMessage("Failed to load config file, ", configFile_);
     }
 }
 

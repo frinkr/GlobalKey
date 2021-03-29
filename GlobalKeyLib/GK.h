@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__WINDOWS__)
@@ -16,6 +17,9 @@
 
 template <typename T>
 using GKPtr = std::shared_ptr<T>;
+
+template <typename T>
+using GKOpt = std::optional<T>;
 
 enum class GKErr : unsigned char {
     noErr = 0,

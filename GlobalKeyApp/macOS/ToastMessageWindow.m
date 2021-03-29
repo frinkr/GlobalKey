@@ -119,35 +119,25 @@
                                    backing:NSBackingStoreBuffered
                                      defer:NO];
         NSView * contentView = [[NSView alloc] initWithFrame:rect];
+
         instance.messageView = [[ToastMessageView alloc] initWithFrame:rect];
+        //[ToastMessageWindow blurView: contentView relativeTo: instance.messageView];
         [contentView addSubview:instance.messageView];
         [instance setContentView:contentView];
+        
     }
     return instance;
 }
 
-- (void)blurView:(NSView *)view
++ (void)blurView:(NSView *)view relativeTo:(NSView*)subView;
 {
-    NSView *blurView = [[NSView alloc] initWithFrame:view.bounds];
-    blurView.wantsLayer = YES;
-    blurView.layer.backgroundColor = [NSColor clearColor].CGColor;
-    blurView.layer.masksToBounds = YES;
-    blurView.layerUsesCoreImageFilters = YES;
-    blurView.layer.needsDisplayOnBoundsChange = YES;
-
-    CIFilter *saturationFilter = [CIFilter filterWithName:@"CIColorControls"];
-    [saturationFilter setDefaults];
-    [saturationFilter setValue:@2.0 forKey:@"inputSaturation"];
-
-    CIFilter *blurFilter = [CIFilter filterWithName:@"CIGaussianBlur"]; // Other blur types are available
-    [blurFilter setDefaults];
-    [blurFilter setValue:@2.0 forKey:@"inputRadius"];
-
-    blurView.layer.backgroundFilters = @[saturationFilter, blurFilter];
-
+    NSVisualEffectView * blurView = [[NSVisualEffectView alloc] initWithFrame:view.frame];
+    blurView.wantsLayer = true;
+    blurView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+    blurView.material = NSVisualEffectMaterialWindowBackground;
+    blurView.state = NSVisualEffectStateActive;
+    //[view addSubview:blurView positioned:NSWindowBelow relativeTo:subView];
     [view addSubview:blurView];
-
-    [blurView.layer setNeedsDisplay];
 }
 
 - (void)postMessage:(NSString*)message withTitle:(NSString*)title andIcon:(NSString*)icon{
