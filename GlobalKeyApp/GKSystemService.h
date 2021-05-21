@@ -22,6 +22,9 @@ namespace GKSystemService {
     void
     openUrl(const std::string & url);
 
+    void
+    lockScreen();
+    
     std::string
     applicationSupportFolder();
 

@@ -2,6 +2,8 @@
 #import <AudioToolbox/AudioServices.h>
 #include <cmath>
 #include <algorithm>
+#include <dlfcn.h>
+
 #include "GKSystemService.h"
 #import "macOS/AppDelegate.h"
 
@@ -161,6 +163,22 @@ namespace GKSystemService {
         }
     }
 
+    void
+    lockScreen() {
+        using SACLockScreenImmediateFunc = int (*) ();
+        static SACLockScreenImmediateFunc SACLockScreenImmediate = [] {
+            if (auto lib = dlopen("/System/Library/PrivateFrameworks/login.framework/Versions/Current/login", RTLD_GLOBAL | RTLD_NOW)) {
+                auto func = (SACLockScreenImmediateFunc)(dlsym(lib, "SACLockScreenImmediate"));
+                dlclose(lib);
+                return func;
+            }
+            return SACLockScreenImmediateFunc(nullptr);
+        }();
+
+        if (SACLockScreenImmediate)
+            SACLockScreenImmediate();
+    }
+    
     std::string
     applicationSupportFolder() {
         @autoreleasepool {

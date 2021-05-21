@@ -9,6 +9,7 @@
 
 #pragma comment(lib, "Winmm.lib")
 #pragma comment(lib, "Shell32.lib")
+#pragma comment(lib, "User32.lib")
 
 namespace {
     // convert UTF-8 string to wstring
@@ -115,6 +116,11 @@ namespace GKSystemService {
         open(url);
     }
 
+    void
+    lockscreen() {
+        LockWorkStation();
+    }
+    
     extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage);
 
     void

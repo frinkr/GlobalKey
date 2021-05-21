@@ -59,6 +59,7 @@ GK_REGISTER_COMMNAND("volume", GKSystemCommand);
 GK_REGISTER_COMMNAND("mute", GKSystemCommand);
 GK_REGISTER_COMMNAND("open", GKSystemCommand);
 GK_REGISTER_COMMNAND("openurl", GKSystemCommand);
+GK_REGISTER_COMMNAND("lockscreen", GKSystemCommand);
 
 void
 GKSystemCommand::run(const std::string & cmd, const std::vector<std::string>& args) {
@@ -85,6 +86,9 @@ GKSystemCommand::run(const std::string & cmd, const std::vector<std::string>& ar
             notifyBadCommand(cmd, args);
         else
             GKSystemService::openUrl(args[0]);
+    }
+    else if (cmd == "lockscreen") {
+        GKSystemService::lockScreen();
     }
 }
 
