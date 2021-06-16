@@ -1,3 +1,4 @@
+#include <cassert>
 #include "GKArgs.h"
 
 namespace {
@@ -78,4 +79,3 @@ GKArgs::skip_spaces(std::size_t pos) const {
         ++ pos;
     return pos;
 }
-

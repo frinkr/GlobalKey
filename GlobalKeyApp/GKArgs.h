@@ -6,10 +6,12 @@ public:
     GKArgs(const std::string &args);
 
     std::string
+
     head() const;
 
     std::string
     take_head();
+
     
     std::string
     rest() const;

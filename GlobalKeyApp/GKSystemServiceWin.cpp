@@ -1,3 +1,4 @@
+#include "GKArgs.h"
 #include "GKSystemService.h"
 #include "GKCoreApp.h"
 #include <codecvt>
@@ -108,7 +109,21 @@ namespace GKSystemService {
 
     void
     open(const std::string& path) {
-        ShellExecuteW(0, 0, utf8ToWString(path).c_str(), 0, 0, SW_SHOW);
+        GKArgs args(path);
+        
+        INT showCmd = SW_NORMAL;
+        if (args.head() == "--hide") {
+            showCmd = SW_HIDE;
+            args.take_head();
+        }
+
+        auto head = args.take_head();
+        auto rest = args.rest();
+            
+        if (rest.empty()) 
+            ShellExecuteW(0, 0, utf8ToWString(head).c_str(), 0, 0, showCmd);
+        else 
+            ShellExecuteW(0, 0, utf8ToWString(head).c_str(), utf8ToWString(rest).c_str(), 0, showCmd);        
     }
 
     void
@@ -117,7 +132,7 @@ namespace GKSystemService {
     }
 
     void
-    lockscreen() {
+    lockScreen() {
         LockWorkStation();
     }
     
