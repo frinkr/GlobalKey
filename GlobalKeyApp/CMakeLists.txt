@@ -7,6 +7,8 @@ if(POLICY CMP0071)
 endif()
 
 set(SOURCES
+  GKArgs.h
+  GKArgs.cpp
   GKCoreApp.h
   GKCoreApp.cpp
   GKCommand.h

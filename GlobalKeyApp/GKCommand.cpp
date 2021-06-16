@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cctype>
 #include <vector>
+#include "GKArgs.h"
 #include "GKProxyApp.h"
 #include "GKCommand.h"
 #include "GKSystemService.h"
@@ -8,17 +9,15 @@
 namespace {
     std::pair<std::string, std::vector<std::string>> 
     splitCommandText(const std::string& commandText) {
-        auto pos = commandText.find_first_of(' ');
-        if (pos != commandText.npos) {
-            auto cmd = commandText.substr(0, pos);
-            auto arg = commandText.substr(pos + 1);
+        GKArgs args(commandText);
+        auto cmd = args.take_head();
+        auto arg = args.rest();
             
-            std::transform(cmd.begin(), cmd.end(), cmd.begin(), [](unsigned char c){ return std::tolower(c); });
+        std::transform(cmd.begin(), cmd.end(), cmd.begin(), [](unsigned char c){ return std::tolower(c); });
+        if (arg.empty())
+            return { cmd, {} };
+        else
             return { cmd, {arg} };
-        }
-        else {
-            return { commandText, {} };
-        }
     }
 }
 
