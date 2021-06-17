@@ -13,7 +13,7 @@ public:
     using Handler = std::function<void()>;
 
 public:
-    explicit GKHotkey(GKKeySequence keySequence);
+    explicit GKHotkey(GKKeySequence keySequence, bool autoRepeat = false);
 
     virtual ~GKHotkey();
 
@@ -44,6 +44,7 @@ public:
 protected:
     Handler handler_ {};
     GKKeySequence keySequence_ {};
+    bool autoRepeat_ {};
     bool registered_ {};
     class Imp;
     friend class Imp;

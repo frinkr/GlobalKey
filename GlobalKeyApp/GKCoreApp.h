@@ -61,6 +61,8 @@ private:
     bool hotkeysEnabled_ {};
     std::vector<GKPtr<GKHotkey>> hotkeys_;
     std::string configFile_;
-    std::vector<CommandEntry> entries_;
+
+    bool autoRepeat_ {};
+    std::vector<CommandEntry> commandEntries_;
 };
 

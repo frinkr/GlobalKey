@@ -11,7 +11,7 @@ namespace Win32 {
 
         auto [mod, key] = *p;
 
-        UINT winMod = MOD_NOREPEAT;
+        UINT winMod = 0;
         if (mod & kSHIFT) winMod |= MOD_SHIFT;
         if (mod & kALT) winMod |= MOD_ALT;
         if (mod & kCTRL) winMod |= MOD_CONTROL;
@@ -71,6 +71,8 @@ GKHotkey::Imp::Imp(GKHotkey * parent, HWND hwnd)
     , hwnd_(hwnd)
 {
     std::tie(modifiers_, virtualKey_) = Win32::parseKeySequence(parent_->keySequence_);
+    if (!parent_->autoRepeat_) 
+        modifiers_ |= MOD_NOREPEAT;
 }
 
 GKErr

@@ -12,16 +12,30 @@ namespace {
     sampleJson() {
 #if GK_WIN
         static json j {
-            { "F1", "toggle WindowsTerminal.exe" },
-            { "F2", "toggle devenv.exe" },
-            { "CTRL+DOWN", "volume -5" },
-            { "CTRL+UP", "volume +5" },
+            {"config", {
+                    {"autorepeat", "1"}
+                }
+            }, 
+            {"keys", {
+                    { "F1", "toggle WindowsTerminal.exe" },
+                    { "F2", "toggle devenv.exe" },
+                    { "CTRL+DOWN", "volume -5" },
+                    { "CTRL+UP", "volume +5" },
+                }
+            }
         };
 #else
         static json j{
-            { "F1", "toggle org.gnu.Emacs" },
-            { "F2", "toggle /Applications/iTerm.app" },
-            { "F3", "toggle /Applications/Google Chrome.app" },
+            {"config", {
+                    {"autorepeat", "1"}
+                }  
+            },
+            {"keys", {
+                    { "F1", "toggle org.gnu.Emacs" },
+                    { "F2", "toggle /Applications/iTerm.app" },
+                    { "F3", "toggle /Applications/Google Chrome.app" },
+                },
+            }
         };
 #endif
         return j;
@@ -58,7 +72,7 @@ GKCoreApp::configPath() const {
 void
 GKCoreApp::reload(bool autoRegister) {
     // Reload config
-    entries_.clear();
+    commandEntries_.clear();
     loadConfig();
 
     // Reload hotkeys
@@ -121,18 +135,25 @@ GKCoreApp::loadConfig() {
             ofs << std::setw(4) << j << std::endl;
         }
 
-        for (auto& kv : j.items())
-            entries_.push_back({ kv.key(), kv.value().get<std::string>() });
+        // Read 'config' section
+        if (const json & cfg = j["config"]; !cfg.empty()) {
+            autoRepeat_ = cfg["autorepeat"];
+        }
+
+        // Read 'keys' section
+        const json & keys = j["keys"];
+        for (auto& kv : keys.items())
+            commandEntries_.push_back({ kv.key(), kv.value().get<std::string>() });
     } catch(...) {
-        entries_.clear();
+        commandEntries_.clear();
         GKSystemService::showMessage("Failed to load config file, ", configFile_);
     }
 }
 
 void
 GKCoreApp::createHotkeys() {
-    for (auto& entry : entries_) {
-        GKPtr<GKHotkey> hotkey = std::make_shared<GKHotkey>(entry.commandKeySequence);
+    for (auto& entry : commandEntries_) {
+        GKPtr<GKHotkey> hotkey = std::make_shared<GKHotkey>(entry.commandKeySequence, autoRepeat_);
         hotkey->setHandler([commandText = entry.commandText]() {
             GKCommandEngine::instance().runCommand(commandText);
             });

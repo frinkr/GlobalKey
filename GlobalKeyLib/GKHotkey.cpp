@@ -9,8 +9,9 @@
 #endif
 
 
-GKHotkey::GKHotkey(GKKeySequence keySequence)
+GKHotkey::GKHotkey(GKKeySequence keySequence, bool autoRepeat)
     : keySequence_(std::move(keySequence))
+    , autoRepeat_(autoRepeat)
 {
 #if GK_WIN
     imp_ = std::make_unique<Imp>(this, GKHotkeyTargetHWND);
