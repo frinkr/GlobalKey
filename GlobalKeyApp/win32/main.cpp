@@ -47,8 +47,8 @@ void PostNotification(LPCWSTR pTitle, LPCWSTR pMessage)
     nid.hWnd = hWnd;
     nid.uID = IDI_TRAYICON;
     nid.uFlags = NIF_INFO;
-    _tcscpy(nid.szInfo, pMessage);
-    _tcscpy(nid.szInfoTitle, pTitle);
+    _tcscpy_s(nid.szInfo, sizeof(nid.szInfo), pMessage);
+    _tcscpy_s(nid.szInfoTitle, sizeof(nid.szInfoTitle), pTitle);
     nid.dwInfoFlags = NIIF_INFO;
     nid.uTimeout = 2000;
     Shell_NotifyIcon(NIM_MODIFY, &nid);
@@ -258,7 +258,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     structNID.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     structNID.uCallbackMessage = WM_USER_SHELLICON;
     structNID.hIcon = LoadIcon(hInst, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));;
-    _tcscpy(structNID.szTip, L"GlobalKey");
+    _tcscpy_s(structNID.szTip, sizeof(structNID.szTip), L"GlobalKey");
     
     if (!Shell_NotifyIcon(NIM_ADD, &structNID)) {
         MessageBox(NULL, _T("Systray Icon Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
@@ -273,5 +273,5 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    return msg.wParam;
+    return 0;
 }

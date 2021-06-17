@@ -1,8 +1,14 @@
 #include <map>
 #include "GKHotkeyWin.h"
 
+namespace {
+    template <typename T>
+    T castPtr(void * p) {
+        return *(T*)&p;
+    }
+}
+
 namespace Win32 {
-    
     std::pair<UINT, UINT>
     parseKeySequence(const GKKeySequence& commandKeySequence) {
         auto p = GKSplitKeySequence(commandKeySequence);
@@ -23,7 +29,6 @@ namespace Win32 {
                 return { winMod, vKey };
         }
 
-        UINT winKey;
         static const std::map<std::string, UINT> map{
             {kF1, VK_F1},
             {kF2, VK_F2},
@@ -81,7 +86,7 @@ GKHotkey::Imp::registerHotkey()
     if (virtualKey_ == -1)
         return GKErr::hotkeySequenceNotValid;
 
-    if (RegisterHotKey(hwnd_, reinterpret_cast<int>(ref()), modifiers_, virtualKey_))
+    if (RegisterHotKey(hwnd_, castPtr<int>(ref()), modifiers_, virtualKey_))
         return GKErr::noErr;
     else
         return GKErr::hotkeyCantRegister;
@@ -94,7 +99,7 @@ GKHotkey::Imp::unregisterHotkey()
     if (virtualKey_ == -1)
         return GKErr::hotkeySequenceNotValid;
 
-    if (UnregisterHotKey(hwnd_, reinterpret_cast<int>(ref())))
+    if (UnregisterHotKey(hwnd_, castPtr<int>(ref())))
         return GKErr::noErr;
     else
         return GKErr::hotkeyCantUnregisteer;

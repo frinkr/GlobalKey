@@ -1,3 +1,6 @@
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+
 #include "GKArgs.h"
 #include "GKSystemService.h"
 #include "GKCoreApp.h"
@@ -166,7 +169,7 @@ namespace GKSystemService {
         auto path = appExePath();
         HKEY hkey = NULL;
         RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", &hkey);
-        RegSetValueEx(hkey, L"GlobalKey", 0, REG_SZ, (BYTE*)path.c_str(), (path.size() + 1) * 2);
+        RegSetValueEx(hkey, L"GlobalKey", 0, REG_SZ, (BYTE*)path.c_str(), DWORD(path.size() + 1) * 2);
         RegCloseKey(hkey);
     }
 
