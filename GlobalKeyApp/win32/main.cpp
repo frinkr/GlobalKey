@@ -1,33 +1,34 @@
-// Headers
-#include <vector>
+#include <iostream>
 #include <map>
+#include <string>
+#include <vector>
+
 #include <windows.h>
 #include <tchar.h>
-#include <commctrl.h>
-#include "Resource.h"
-#include <iostream>
-#include <string>
+#include <gdiplus.h>
+
 #include "GK.h"
 #include "GKHotKeyWin.h"
+#include "Resource.h"
 #include "..\GKCoreApp.h"
 #include "..\GKSystemService.h"
 
-// Libs
-#pragma comment(lib, "comctl32.lib")
+using namespace Gdiplus;
+#pragma comment (lib,"Gdiplus.lib")
 
-// Various consts & Defs
 #define	WM_USER_SHELLICON WM_USER + 200
-#define WM_TASKBAR_CREATE RegisterWindowMessage(_T("TaskbarCreated"))
-
-#define NOTIF_TIMER_ID 50001
+#define HIDE_NOTIFICATION_TIMER_ID 50001
 
 // Globals
-HWND hWnd {};
-HINSTANCE hInst {};
-NOTIFYICONDATA structNID {};
-UINT_PTR notifTimerHandle {};
-std::wstring notifTitle;
-std::wstring notifMessage;
+HWND s_hMainWnd {};
+HWND s_hNotifWnd {};
+NOTIFYICONDATA s_trayIconData {};
+UINT_PTR s_hHideNotifWndTimer {};
+UINT s_uTaskbarRestart{};
+std::wstring s_sNotifTitle;
+std::wstring s_sNotifMessage;
+constexpr int s_uNotifWndWidth {400};
+constexpr int s_uNotifWndHeight {100};
 
 void initApp(HWND hWnd) {
     GKHotkeyTargetHWND = hWnd;
@@ -39,59 +40,62 @@ BOOL OnHotkey(WPARAM wParam, LPARAM lParam) {
     return TRUE;
 }
 
-void PostNotification(LPCWSTR pTitle, LPCWSTR pMessage)
-{
-    NOTIFYICONDATA nid;
-    memset(&nid, 0, sizeof(NOTIFYICONDATA));
-    nid.cbSize = sizeof(NOTIFYICONDATA);
-    nid.hWnd = hWnd;
-    nid.uID = IDI_TRAYICON;
-    nid.uFlags = NIF_INFO;
-    _tcscpy_s(nid.szInfo, sizeof(nid.szInfo), pMessage);
-    _tcscpy_s(nid.szInfoTitle, sizeof(nid.szInfoTitle), pTitle);
-    nid.dwInfoFlags = NIIF_INFO;
-    nid.uTimeout = 2000;
-    Shell_NotifyIcon(NIM_MODIFY, &nid);
+int ShowError(LPCTSTR pMessage, int iError = -1) {
+    MessageBox(NULL, pMessage, _T("Error"), MB_ICONEXCLAMATION | MB_OK);
+    return iError;
 }
 
-void TryPostNotification()
-{
-    KillTimer(hWnd, notifTimerHandle);
+void GetPreferredNotificationWindowPosition(int * x, int * y) {
+    RECT rect;
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
 
-    if (notifMessage.empty())
-        return;
-
-    PostNotification(L"", L""); // close existing ballon
-    PostNotification(notifTitle.c_str(), notifMessage.c_str());
-
-    notifMessage.clear();
-    notifTitle.clear();
+    *x = rect.left + (rect.right - rect.left - s_uNotifWndWidth) / 2;
+    *y = rect.bottom - s_uNotifWndHeight * 1.0;
 }
 
-extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage)
-{
-    notifTitle = pTitle;
-    notifMessage = pMessage;
-    notifTimerHandle = SetTimer(hWnd, NOTIF_TIMER_ID, 500, NULL);
+extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage) {
+    s_sNotifTitle = pTitle;
+    s_sNotifMessage = pMessage;
+    s_hHideNotifWndTimer = SetTimer(s_hMainWnd, HIDE_NOTIFICATION_TIMER_ID, 1000, NULL);
+
+    int x, y;
+    GetPreferredNotificationWindowPosition(&x, &y);
+
+    MoveWindow(s_hNotifWnd, x, y, s_uNotifWndWidth, s_uNotifWndHeight, FALSE);
+    ShowWindow(s_hNotifWnd, SW_SHOWNORMAL);
+    UpdateWindow(s_hNotifWnd);
+    InvalidateRect(s_hNotifWnd, 0, TRUE);
 }
 
+int AddTrayIcon() {
+    memset(&s_trayIconData, 0, sizeof(NOTIFYICONDATA));
+    s_trayIconData.cbSize = sizeof(NOTIFYICONDATA);
+    s_trayIconData.hWnd = s_hMainWnd;
+    s_trayIconData.uID = IDI_TRAYICON;
+    s_trayIconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    s_trayIconData.uCallbackMessage = WM_USER_SHELLICON;
+    s_trayIconData.hIcon = LoadIcon(GetModuleHandle(nullptr), (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));;
+    _tcscpy_s(s_trayIconData.szTip, sizeof(s_trayIconData.szTip) / sizeof(s_trayIconData.szTip[0]), L"GlobalKey");
+    
+    if (!Shell_NotifyIcon(NIM_ADD, &s_trayIconData))
+        return ShowError(_T("Systray Icon Creation Failed!"));
+    
+    return 0;
+}
 
-/* ================================================================================================================== */
-
-/*
-  Name: ... WndProc(...)
-  Desc: Main hidden "Window" that handles the messaging for our system tray
-*/
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CALLBACK WndProcMain(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam) {
     POINT lpClickPoint;
     
-    switch (message)
+    switch (uMessage)
     {
-    case WM_DESTROY:
-        Shell_NotifyIcon(NIM_DELETE, &structNID);	// Remove Tray Item
-        PostQuitMessage(0);							// Quit
+    case WM_CREATE:
+        s_uTaskbarRestart = RegisterWindowMessage(_T("TaskbarCreated"));
         break;
+        
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+
     case WM_USER_SHELLICON:			// sys tray icon Messages
         switch (LOWORD(lParam))
         {
@@ -103,7 +107,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             GetCursorPos(&lpClickPoint);
 
             // Load menu resource
-            hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_POPUP_MENU));
+            hMenu = LoadMenu(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDR_POPUP_MENU));
             if (!hMenu)
                 return -1;	// !0, message not successful?
 
@@ -135,9 +139,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
         }
-        break;
-    case WM_CLOSE:
-        DestroyWindow(hWnd);	// Destroy Window
         break;
     case WM_COMMAND:
         switch (LOWORD(wParam))
@@ -172,106 +173,138 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         OnHotkey(wParam, lParam);
         break;
     case WM_TIMER:
-        TryPostNotification();
+        ShowWindow(s_hNotifWnd, SW_HIDE);
         break;
     default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+        if(uMessage == s_uTaskbarRestart)
+            return AddTrayIcon();
+        break;
     }
-    return 0;		// Return 0 = message successfully proccessed
+    return DefWindowProc(hWnd, uMessage, wParam, lParam);
 }
 
-/*
-  Name: ... WinMain(...)
-  Desc: Main Entry point
-*/
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-{
-    MSG msg;
-    WNDCLASSEX wc;
-    HANDLE hMutexInstance;
-    INITCOMMONCONTROLSEX iccex;
+LRESULT CALLBACK WndProcNotification(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam) {
 
-    // Check for single instance
-    // ------------------------------
-    // Note: I recommend to use the GUID Creation Tool for the most unique id
-    // Tools->Create GUID for Visual Studio .Net 2003
-    // Or search somewhere in the Platform SDK for other environments
-    hMutexInstance = CreateMutex(NULL, FALSE, _T("TrayApp-{1EB489D6-6702-43cd-A859-C2BA7DB58B06}"));
+    switch (uMessage) {
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hWnd, &ps);
+
+        Graphics g(hdc);
+
+        // Here your application is laid out.
+        // For this introduction, we just print out "Hello, World!"
+        // in the top left corner.
+
+        // End application-specific layout section.
+
+        SolidBrush  brush(Color(255, 0, 0, 255));
+        FontFamily  fontFamily(L"Arial");
+        Font        font(&fontFamily, 24, FontStyleRegular, UnitPixel);
+        PointF      pointF(10.0f, 20.0f);
+
+        g.DrawString(s_sNotifMessage.c_str(), -1, &font, pointF, &brush);
+
+        EndPaint(hWnd, &ps);
+    }
+        break;
+    default:
+        return DefWindowProc(hWnd, uMessage, wParam, lParam);
+        break;
+    }
+
+    return 0;
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    HANDLE hMutexInstance = CreateMutex(NULL, FALSE, _T("GlobalKey-{1EB489D6-6702-43cd-A859-C2BA7DB58B06}"));
     if (GetLastError() == ERROR_ALREADY_EXISTS || GetLastError() == ERROR_ACCESS_DENIED)
         return 0;
 
-    // Copy instance so it can be used globally in other methods
-    hInst = hInstance;
-
-    // Init common controls (if you're using them)
-    // ------------------------------
-    // See: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/commctls/common/structures/initcommoncontrolsex.asp
-    iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-    iccex.dwICC = ICC_UPDOWN_CLASS | ICC_LISTVIEW_CLASSES;
-    if (!InitCommonControlsEx(&iccex)) {
-        MessageBox(NULL, _T("Cannot Initialize Common Controls!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
-        return 0;
-    }
-
     // Window "class"
-    wc.cbSize = sizeof(WNDCLASSEX);
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = WndProc;
-    wc.cbClsExtra = 0;
-    wc.cbWndExtra = 0;
-    wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-    wc.lpszMenuName = NULL;
-    wc.lpszClassName = _T("GlobalKey Tray Application");
-    wc.hIconSm = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));
-    if (!RegisterClassEx(&wc)) {
-        MessageBox(NULL, _T("Window Registration Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
-        return 0;
-    }
+    WNDCLASSEX mainWndCls;
+    mainWndCls.cbSize = sizeof(WNDCLASSEX);
+    mainWndCls.style = CS_HREDRAW | CS_VREDRAW;
+    mainWndCls.lpfnWndProc = WndProcMain;
+    mainWndCls.cbClsExtra = 0;
+    mainWndCls.cbWndExtra = 0;
+    mainWndCls.hInstance = hInstance;
+    mainWndCls.hIcon = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));
+    mainWndCls.hCursor = LoadCursor(NULL, IDC_ARROW);
+    mainWndCls.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    mainWndCls.lpszMenuName = NULL;
+    mainWndCls.lpszClassName = _T("GlobalKey Tray Window Class");
+    mainWndCls.hIconSm = LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));
+    if (!RegisterClassEx(&mainWndCls)) 
+        return ShowError(_T("Window Registration Failed!"));
 
     // Create the hidden window
-    hWnd = CreateWindowEx(
-        WS_EX_CLIENTEDGE,
-        _T("GlobalKey Tray Application"),
-        _T("GlobalKey Tray Application Framework"),
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        NULL,
-        NULL,
-        hInstance,
-        NULL);
-    if (hWnd == NULL) {
-        MessageBox(NULL, _T("Window Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
-        return 0;
-    }
+    s_hMainWnd = CreateWindowEx(WS_EX_CLIENTEDGE,
+                                _T("GlobalKey Tray Window Class"),
+                                _T("GlobalKey Tray Window"),
+                                WS_OVERLAPPEDWINDOW,
+                                CW_USEDEFAULT,
+                                CW_USEDEFAULT,
+                                CW_USEDEFAULT,
+                                CW_USEDEFAULT,
+                                NULL,
+                                NULL,
+                                hInstance,
+                                NULL);
+    if (s_hMainWnd == NULL)
+        return ShowError(_T("Window Creation Failed!"));
 
-    // tray icon settings
-    memset(&structNID, 0, sizeof(NOTIFYICONDATA));
-    structNID.cbSize = sizeof(NOTIFYICONDATA);
-    structNID.hWnd = hWnd;
-    structNID.uID = IDI_TRAYICON;
-    structNID.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    structNID.uCallbackMessage = WM_USER_SHELLICON;
-    structNID.hIcon = LoadIcon(hInst, (LPCTSTR)MAKEINTRESOURCE(IDI_TRAYICON));;
-    _tcscpy_s(structNID.szTip, sizeof(structNID.szTip), L"GlobalKey");
+    // Notification Window Class
+    WNDCLASSEX notifWndCls;
+    notifWndCls.cbSize = sizeof(WNDCLASSEX);
+    notifWndCls.style = CS_HREDRAW | CS_VREDRAW;
+    notifWndCls.lpfnWndProc = WndProcNotification;
+    notifWndCls.cbClsExtra = 0;
+    notifWndCls.cbWndExtra = 0;
+    notifWndCls.hInstance = hInstance;
+    notifWndCls.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
+    notifWndCls.hCursor = LoadCursor(NULL, IDC_ARROW);
+    notifWndCls.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    notifWndCls.lpszMenuName = NULL;
+    notifWndCls.lpszClassName = _T("GlobalKey Notification Window Class");
+    notifWndCls.hIconSm = LoadIcon(notifWndCls.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
+
+    if (!RegisterClassEx(&notifWndCls))
+        return ShowError(_T("Call to RegisterClassEx failed!"));
+
+    // Notification Window
+    s_hNotifWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_NOACTIVATE,
+                                 _T("GlobalKey Notification Window Class"),
+                                 _T("GlobalKey Notification Window"),
+                                 WS_POPUP,
+                                 200, 200,
+                                 s_uNotifWndWidth, s_uNotifWndHeight,
+                                 NULL,
+                                 NULL,
+                                 hInstance,
+                                 NULL
+        );
+
+    if (!s_hNotifWnd)
+        return ShowError(_T("Call to CreateWindow failed!"));
+
+    // Tray Icon
+    AddTrayIcon();
     
-    if (!Shell_NotifyIcon(NIM_ADD, &structNID)) {
-        MessageBox(NULL, _T("Systray Icon Creation Failed!"), _T("Error!"), MB_ICONEXCLAMATION | MB_OK);
-        return 0;
-    }
+    initApp(s_hMainWnd);
 
-    initApp(hWnd);
+    // Init GDI+
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR           gdiplusToken;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
     // message Loop
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    GdiplusShutdown(gdiplusToken);
     return 0;
 }
