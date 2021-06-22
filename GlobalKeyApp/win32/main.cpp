@@ -13,7 +13,7 @@
 #include "..\GKCoreApp.h"
 #include "..\GKSystemService.h"
 
-using namespace Gdiplus;
+
 #pragma comment (lib,"Gdiplus.lib")
 
 #define	WM_USER_SHELLICON WM_USER + 200
@@ -27,7 +27,8 @@ UINT_PTR s_hHideNotifWndTimer {};
 UINT s_uTaskbarRestart{};
 std::wstring s_sNotifTitle;
 std::wstring s_sNotifMessage;
-constexpr int s_uNotifWndWidth {400};
+std::wstring s_sNotifIconName;
+constexpr int s_uNotifWndWidth {300};
 constexpr int s_uNotifWndHeight {100};
 
 void initApp(HWND hWnd) {
@@ -53,9 +54,11 @@ void GetPreferredNotificationWindowPosition(int * x, int * y) {
     *y = rect.bottom - s_uNotifWndHeight * 1.0;
 }
 
-extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage) {
+extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage, LPCWSTR pIconName) {
     s_sNotifTitle = pTitle;
     s_sNotifMessage = pMessage;
+    s_sNotifIconName = pIconName;
+    
     s_hHideNotifWndTimer = SetTimer(s_hMainWnd, HIDE_NOTIFICATION_TIMER_ID, 1000, NULL);
 
     int x, y;
@@ -81,6 +84,44 @@ int AddTrayIcon() {
         return ShowError(_T("Systray Icon Creation Failed!"));
     
     return 0;
+}
+
+IStream * LoadStreamFromResource(HMODULE hModule, LPCTSTR lpName, LPCTSTR lpType) {
+    IStream* pStream = nullptr;
+    HGLOBAL hGlobal = nullptr;
+
+    if (HRSRC hrsrc = FindResource(hModule, lpName, lpType)) {
+        if (DWORD dwResourceSize = SizeofResource(hModule, hrsrc); dwResourceSize > 0) {
+            if (HGLOBAL hGlobalResource = LoadResource(hModule, hrsrc)) {
+                void* bytes = LockResource(hGlobalResource);
+                if (hGlobal = ::GlobalAlloc(GHND, dwResourceSize)) {
+                    if (void* pBuffer = ::GlobalLock(hGlobal)) {
+                        memcpy(pBuffer, bytes, dwResourceSize);
+                        if (SUCCEEDED(CreateStreamOnHGlobal(hGlobal, TRUE, &pStream)))
+                            hGlobal = nullptr;
+                        
+                    }
+                }
+            }
+        }
+    }
+
+    if (hGlobal) {
+        GlobalFree(hGlobal);
+        hGlobal = nullptr;
+    }
+
+    return pStream;
+}
+
+
+Gdiplus::Bitmap* LoadImageFromResource(HMODULE hModule, LPCTSTR lpName, LPCTSTR lpType) {
+    if (IStream* stream = LoadStreamFromResource(hModule, lpName, lpType)) {
+        Gdiplus::Bitmap* bm = new Gdiplus::Bitmap(stream);
+        stream->Release();
+        return bm;
+    }
+    return nullptr;
 }
 
 LRESULT CALLBACK WndProcMain(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam) {
@@ -183,31 +224,51 @@ LRESULT CALLBACK WndProcMain(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPa
     return DefWindowProc(hWnd, uMessage, wParam, lParam);
 }
 
+LPCTSTR MapResource(LPCTSTR lpName) {
+    if (_tcsicmp(lpName, _T("vol")) == 0)
+        return MAKEINTRESOURCE(IDB_PNG_VOL);
+    return nullptr;
+}
+
 LRESULT CALLBACK WndProcNotification(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam) {
+    using namespace Gdiplus;
 
     switch (uMessage) {
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-
         Graphics g(hdc);
 
-        // Here your application is laid out.
-        // For this introduction, we just print out "Hello, World!"
-        // in the top left corner.
+        float bmDestHeight = 0;
+        float bmDestWidth = 0;
+        float bmDestY = 0;
+        float bmDestX = 0;
 
-        // End application-specific layout section.
+        if (auto bm = LoadImageFromResource(NULL, MapResource(s_sNotifIconName.c_str()), _T("PNG"))) {
+            bmDestHeight = s_uNotifWndHeight * 0.6;
+            bmDestWidth = bmDestHeight * bm->GetWidth() / bm->GetHeight();
+            bmDestY = (s_uNotifWndHeight - bmDestHeight) / 2;
+            bmDestX = bmDestY;
+            g.DrawImage(bm, Rect(bmDestX, bmDestY, bmDestWidth, bmDestHeight));
+            delete bm;
+        }
 
-        SolidBrush  brush(Color(255, 0, 0, 255));
+        SolidBrush  brush(Color(255, 255, 255, 255));
         FontFamily  fontFamily(L"Arial");
         Font        font(&fontFamily, 24, FontStyleRegular, UnitPixel);
-        PointF      pointF(10.0f, 20.0f);
 
-        g.DrawString(s_sNotifMessage.c_str(), -1, &font, pointF, &brush);
+        StringFormat fmt;
+        fmt.SetAlignment(StringAlignment::StringAlignmentCenter);
+        fmt.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+
+        RectF rect(bmDestX + bmDestWidth, 0, s_uNotifWndWidth - bmDestWidth - 3 * bmDestX, s_uNotifWndHeight);
+        g.DrawString(s_sNotifMessage.c_str(), -1, &font, rect, &fmt, &brush);
 
         EndPaint(hWnd, &ps);
     }
         break;
+//    case WM_ERASEBKGND:
+//        return TRUE;
     default:
         return DefWindowProc(hWnd, uMessage, wParam, lParam);
         break;
@@ -264,7 +325,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     notifWndCls.hInstance = hInstance;
     notifWndCls.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
     notifWndCls.hCursor = LoadCursor(NULL, IDC_ARROW);
-    notifWndCls.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    notifWndCls.hbrBackground = CreateSolidBrush(RGB(0x11, 0x11, 0x11));
     notifWndCls.lpszMenuName = NULL;
     notifWndCls.lpszClassName = _T("GlobalKey Notification Window Class");
     notifWndCls.hIconSm = LoadIcon(notifWndCls.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
@@ -273,7 +334,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return ShowError(_T("Call to RegisterClassEx failed!"));
 
     // Notification Window
-    s_hNotifWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_NOACTIVATE,
+    s_hNotifWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_NOACTIVATE | WS_EX_LAYERED,
                                  _T("GlobalKey Notification Window Class"),
                                  _T("GlobalKey Notification Window"),
                                  WS_POPUP,
@@ -287,6 +348,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (!s_hNotifWnd)
         return ShowError(_T("Call to CreateWindow failed!"));
+    SetLayeredWindowAttributes(s_hNotifWnd, 0, 192, LWA_ALPHA);
 
     // Tray Icon
     AddTrayIcon();
@@ -294,9 +356,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     initApp(s_hMainWnd);
 
     // Init GDI+
-    GdiplusStartupInput gdiplusStartupInput;
-    ULONG_PTR           gdiplusToken;
-    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
     // message Loop
     MSG msg;
@@ -305,6 +367,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         DispatchMessage(&msg);
     }
 
-    GdiplusShutdown(gdiplusToken);
+    Gdiplus::GdiplusShutdown(gdiplusToken);
     return 0;
 }

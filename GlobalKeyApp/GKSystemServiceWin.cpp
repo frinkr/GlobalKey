@@ -85,7 +85,7 @@ namespace GKSystemService {
         currentVolume = std::clamp<float>((currentVolume * 100 + value) / 100, 0, 1);
         audio.ep()->SetMasterVolumeLevelScalar(currentVolume, NULL);
 
-        showMessage("Volumne ", int(std::round(currentVolume * 100)));
+        postNotification(GKAPP_NAME, "Volumne " + std::to_string(int(std::round(currentVolume * 100))), "vol");
     }
 
     bool
@@ -139,11 +139,11 @@ namespace GKSystemService {
         LockWorkStation();
     }
     
-    extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage);
+    extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage, LPCWSTR pIconName);
 
     void
     postNotification(const std::string & title, const std::string & message, const std::string & icon) {
-        PostNotificationWinImp(utf8ToWString(title).c_str(), utf8ToWString(message).c_str());
+        PostNotificationWinImp(utf8ToWString(title).c_str(), utf8ToWString(message).c_str(), utf8ToWString(icon).c_str());
     }
 
     std::string
