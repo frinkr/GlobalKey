@@ -10,11 +10,11 @@ public:
     clone() const = 0;
     
     virtual void
-    run(const std::string & cmd, const std::vector<std::string> & args) = 0;
+    run(const std::string & cmd, const std::string & args) = 0;
 
 protected:
     void
-    notifyBadCommand(const std::string & cmd, const std::vector<std::string> & args);
+    notifyBadCommand(const std::string & cmd, const std::string & args);
 };
 
 template <typename T>
@@ -29,13 +29,13 @@ public:
 class GKToggleAppCommand : public GKClonableCommand<GKToggleAppCommand> {
 public:
     void
-    run(const std::string & cmd, const std::vector<std::string>& args) override;
+    run(const std::string & cmd, const std::string & args) override;
 };
 
 class GKSystemCommand : public GKClonableCommand<GKSystemCommand> {
 public:
     void
-    run(const std::string & cmd, const std::vector<std::string>& args) override;
+    run(const std::string & cmd, const std::string & args) override;
 };
 
 class GKCommandEngine : private GKNoCopy {

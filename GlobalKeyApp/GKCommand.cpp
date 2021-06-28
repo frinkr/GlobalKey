@@ -7,44 +7,37 @@
 #include "GKSystemService.h"
 
 namespace {
-    std::pair<std::string, std::vector<std::string>> 
+    std::pair<std::string, std::string>
     splitCommandText(const std::string& commandText) {
         GKArgs args(commandText);
         auto cmd = args.take_head();
         auto arg = args.rest();
             
         std::transform(cmd.begin(), cmd.end(), cmd.begin(), [](unsigned char c){ return std::tolower(c); });
-        if (arg.empty())
-            return { cmd, {} };
-        else
-            return { cmd, {arg} };
+        return { cmd, arg };
     }
 }
 
 
 void
-GKCommand::notifyBadCommand(const std::string & cmd, const std::vector<std::string> & args) {
-    GKSystemService::showMessage("Bad command '", cmd, "'");
+GKCommand::notifyBadCommand(const std::string & cmd, const std::string & args) {
+    GKSystemService::showMessage("Bad command '", cmd, "' with arguments ", args);
 }
 
 GK_REGISTER_COMMNAND("toggle", GKToggleAppCommand);
 
 void
-GKToggleAppCommand::run(const std::string & cmd, const std::vector<std::string>& args) {
-    auto appDesc = args.front();
-    auto appProxy = std::make_shared<GKProxyApp>(appDesc);
+GKToggleAppCommand::run(const std::string & cmd, const std::string & args) {
+    auto appProxy = std::make_shared<GKProxyApp>(args);
     if (!appProxy) {
-        GKSystemService::showMessage("Failed to find application ", appDesc);
+        GKSystemService::showMessage("Failed to find application ", args);
         return;
     }
 
     if (!appProxy->running()) {
         if (GKErr::noErr != appProxy->launch()) {
-            GKSystemService::showMessage("Failed to launch application ", appDesc);
+            GKSystemService::showMessage("Failed to launch application ", args);
             return;
-        }
-        else {
-            
         }
     }
     if (appProxy->atFrontmost() && appProxy->visible())
@@ -61,10 +54,10 @@ GK_REGISTER_COMMNAND("openurl", GKSystemCommand);
 GK_REGISTER_COMMNAND("lockscreen", GKSystemCommand);
 
 void
-GKSystemCommand::run(const std::string & cmd, const std::vector<std::string>& args) {
+GKSystemCommand::run(const std::string & cmd, const std::string & args) {
     if (cmd == "volume") {
         if (args.size() == 1) {
-            int value = std::stoi(args[0]);
+            int value = std::stoi(args);
             GKSystemService::adjustVolume(value);
         }
     }
@@ -78,13 +71,13 @@ GKSystemCommand::run(const std::string & cmd, const std::vector<std::string>& ar
         if (args.empty())
             notifyBadCommand(cmd, args);
         else
-            GKSystemService::open(args[0]);
+            GKSystemService::open(args);
     }
     else if (cmd == "openurl") {
         if (args.empty())
             notifyBadCommand(cmd, args);
         else
-            GKSystemService::openUrl(args[0]);
+            GKSystemService::openUrl(args);
     }
     else if (cmd == "lockscreen") {
         GKSystemService::lockScreen();
