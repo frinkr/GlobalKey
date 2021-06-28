@@ -1,17 +1,13 @@
 #pragma once
 
 #include "GKHotkey.h"
+#include "GKConfig.h"
 
 #define gkApp GKCoreApp::instance()
 #define GKAPP_NAME "GlobalKey"
 #define GKAPP_URL "https://github.com/frinkr/GlobalKey"
 
 class GKCoreApp : private GKNoCopy {
-private:
-    struct CommandEntry {
-        GKKeySequence     commandKeySequence;
-        std::string       commandText;
-    };
 public:
     static GKCoreApp&
     instance();
@@ -59,10 +55,8 @@ private:
 
 private:
     bool hotkeysEnabled_ {};
+    GKConfig config_ {};
+    std::string configFilePath_;
     std::vector<GKPtr<GKHotkey>> hotkeys_;
-    std::string configFile_;
-
-    bool autoRepeat_ {};
-    std::vector<CommandEntry> commandEntries_;
 };
 

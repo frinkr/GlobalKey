@@ -2,52 +2,20 @@
 #include <fstream>
 
 #include "json.hpp"
+#include "GKConfig.h"
 #include "GKCommand.h"
 #include "GKCoreApp.h"
 #include "GKSystemService.h"
 using json = nlohmann::json;
 
 namespace {
-    const json&
-    sampleJson() {
-#if GK_WIN
-        static json j {
-            {"config", {
-                    {"autorepeat", "1"}
-                }
-            }, 
-            {"keys", {
-                    { "F1", "toggle WindowsTerminal.exe" },
-                    { "F2", "toggle devenv.exe" },
-                    { "CTRL+DOWN", "volume -5" },
-                    { "CTRL+UP", "volume +5" },
-                }
-            }
-        };
-#else
-        static json j{
-            {"config", {
-                    {"autorepeat", "1"}
-                }  
-            },
-            {"keys", {
-                    { "F1", "toggle org.gnu.Emacs" },
-                    { "F2", "toggle /Applications/iTerm.app" },
-                    { "F3", "toggle /Applications/Google Chrome.app" },
-                },
-            }
-        };
-#endif
-        return j;
-    }
-
     std::filesystem::path
     configFilePath() {
         std::filesystem::path appSupport(GKSystemService::applicationSupportFolder());
         auto dir = appSupport / GKAPP_NAME;
         if (!std::filesystem::exists(dir))
             std::filesystem::create_directories(dir);
-        return dir / GKAPP_NAME ".json";
+        return dir / GKAPP_NAME ".yaml";
     }
 }
 
@@ -61,18 +29,17 @@ GKCoreApp::~GKCoreApp() = default;
 
 void
 GKCoreApp::revealConfigFile() {
-    GKSystemService::revealFile(configFile_);
+    GKSystemService::revealFile(configFilePath_);
 }
 
 const std::string&
 GKCoreApp::configPath() const {
-    return configFile_;
+    return configFilePath_;
 }
 
 void
 GKCoreApp::reload(bool autoRegister) {
     // Reload config
-    commandEntries_.clear();
     loadConfig();
 
     // Reload hotkeys
@@ -121,41 +88,29 @@ GKCoreApp::invokeHotkey(GKHotkey::Ref hotkeyRef) {
 void
 GKCoreApp::loadConfig() {
     auto p = configFilePath();
-    configFile_ = p.u8string();
+    configFilePath_ = p.u8string();
+    config_ = GKConfig();
 
     try {
-        json j;
         if (std::filesystem::exists(p)) {
-            std::ifstream ifs(p);
-            ifs >> j;
+            if (!config_.load(configFilePath_))
+                throw std::runtime_error("bad config");
         }
         else {
-            j = sampleJson();
-            std::ofstream ofs(p);
-            ofs << std::setw(4) << j << std::endl;
+            config_ = GKConfig::sample();
+            config_.save(configFilePath_);
         }
-
-        // Read 'config' section
-        if (const json & cfg = j["config"]; !cfg.empty()) {
-            autoRepeat_ = cfg["autorepeat"];
-        }
-
-        // Read 'keys' section
-        const json & keys = j["keys"];
-        for (auto& kv : keys.items())
-            commandEntries_.push_back({ kv.key(), kv.value().get<std::string>() });
     } catch(...) {
-        commandEntries_.clear();
-        GKSystemService::showMessage("Failed to load config file, ", configFile_);
+        GKSystemService::showMessage("Failed to load config file, ", configFilePath_);
     }
 }
 
 void
 GKCoreApp::createHotkeys() {
-    for (auto& entry : commandEntries_) {
-        GKPtr<GKHotkey> hotkey = std::make_shared<GKHotkey>(entry.commandKeySequence, autoRepeat_);
-        hotkey->setHandler([commandText = entry.commandText]() {
-            GKCommandEngine::instance().runCommand(commandText);
+    for (auto & [key, cmd] : config_.keys) {
+        GKPtr<GKHotkey> hotkey = std::make_shared<GKHotkey>(key, config_.autoRepeat);
+        hotkey->setHandler([&cmd]() {
+            GKCommandEngine::instance().runCommand(cmd);
             });
         hotkeys_.push_back(hotkey);
     }

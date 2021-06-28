@@ -11,6 +11,8 @@ set(SOURCES
   GKArgs.cpp
   GKCoreApp.h
   GKCoreApp.cpp
+  GKConfig.h
+  GKConfig.cpp
   GKCommand.h
   GKCommand.cpp
   GKSystemService.h
@@ -27,6 +29,10 @@ if (WIN32)
     win32/Resource.h
     win32/Resource.rc
     )
+  
+  find_package(yaml-cpp CONFIG REQUIRED)
+  target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp)
+  
 else(APPLE)
   add_executable(
     ${PROJECT_NAME}
