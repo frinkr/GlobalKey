@@ -34,7 +34,12 @@ GKArgs::take_head() {
         return {};
     }
 }
-    
+
+bool
+GKArgs::done() const {
+    return pos_ >= args_.size();
+}
+
 std::string
 GKArgs::rest() const {
     return args_.substr(pos_);

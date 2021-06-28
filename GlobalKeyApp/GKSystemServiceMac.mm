@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <dlfcn.h>
 
+#include "GKArgs.h"
 #include "GKSystemService.h"
 #import "macOS/AppDelegate.h"
 
@@ -146,7 +147,27 @@ namespace GKSystemService {
     void
     open(const std::string & path) {
         @autoreleasepool {
+            GKArgs args(path);
+            auto head = args.take_head();
+            auto rest = args.rest();
+            
             NSWorkspace * workspace = [NSWorkspace sharedWorkspace];
+            if (!rest.empty()) {
+                NSBundle * appBundle = [NSBundle bundleWithPath:fromStdString(head)];
+                if (appBundle) {
+                    NSMutableArray<NSString*> * arr = [[NSMutableArray alloc] init];
+                    while (!args.done())
+                        [arr addObject:fromStdString(args.take_head())];
+                    
+                    NSWorkspaceOpenConfiguration * config  = [NSWorkspaceOpenConfiguration configuration];
+                    [config setArguments:arr];
+                    
+                    [workspace openApplicationAtURL:[NSURL fileURLWithPath:fromStdString(head)]
+                                      configuration:config
+                                  completionHandler:nil];
+                }
+                return;
+            }
             NSURL * url = [NSURL fileURLWithPath:fromStdString(path)];
             [workspace openURL:url];
         }

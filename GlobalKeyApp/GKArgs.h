@@ -12,6 +12,8 @@ public:
     std::string
     take_head();
 
+    bool
+    done() const;
     
     std::string
     rest() const;

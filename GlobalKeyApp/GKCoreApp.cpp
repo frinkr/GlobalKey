@@ -109,8 +109,9 @@ void
 GKCoreApp::createHotkeys() {
     for (auto & [key, cmd] : config_.keys) {
         GKPtr<GKHotkey> hotkey = std::make_shared<GKHotkey>(key, config_.autoRepeat);
-        hotkey->setHandler([&cmd]() {
-            GKCommandEngine::instance().runCommand(cmd);
+        auto & command = cmd; // Fix clang
+        hotkey->setHandler([&command]() {
+            GKCommandEngine::instance().runCommand(command);
             });
         hotkeys_.push_back(hotkey);
     }

@@ -29,10 +29,6 @@ if (WIN32)
     win32/Resource.h
     win32/Resource.rc
     )
-  
-  find_package(yaml-cpp CONFIG REQUIRED)
-  target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp)
-  
 else(APPLE)
   add_executable(
     ${PROJECT_NAME}
@@ -49,6 +45,9 @@ else(APPLE)
   target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox -framework CoreAudio -framework QuartzCore")
 endif()
 
+find_package(yaml-cpp CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp)
+  
 target_link_libraries(${PROJECT_NAME} PRIVATE GlobalKeyLib)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/GlobalKeyLib)
 
