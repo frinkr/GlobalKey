@@ -56,7 +56,7 @@ GK_REGISTER_COMMNAND("lockscreen", GKSystemCommand);
 void
 GKSystemCommand::run(const std::string & cmd, const std::string & args) {
     if (cmd == "volume") {
-        if (args.size() == 1) {
+        if (!args.empty()) {
             int value = std::stoi(args);
             GKSystemService::adjustVolume(value);
         }
