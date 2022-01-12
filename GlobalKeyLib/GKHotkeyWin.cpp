@@ -24,9 +24,8 @@ namespace Win32 {
         if (mod & kMETA) winMod |= MOD_WIN;
 
         if (key.size() == 1) {
-            const SHORT vKey = VkKeyScanA(key[0]);
-            if (vKey > -1)
-                return { winMod, vKey };
+            if (auto k = key[0]; ('0' <= k && k <= '9') || ('A' <= k && k <= 'Z'))
+                return { winMod, k };
         }
 
         static const std::map<std::string, UINT> map{
