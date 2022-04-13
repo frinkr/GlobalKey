@@ -16,6 +16,7 @@
     NSStatusItem * tray;
     NSMenuItem * enableItem;
     NSMenuItem * reloadItem;
+    NSMenuItem * caffItem;
 }
 
 @end
@@ -34,9 +35,15 @@
     [enableItem setTarget:self];
     reloadItem = [trayMenu addItemWithTitle:@"Reload" action:@selector(onReloadMenuItem:) keyEquivalent:@"r"];
     [reloadItem setTarget:self];
-    
     [[trayMenu addItemWithTitle:@"Edit Hotkeys" action:@selector(onEditMenuItem:) keyEquivalent:@""] setTarget:self];
+
     [trayMenu addItem:[NSMenuItem separatorItem]];
+
+    caffItem = [trayMenu addItemWithTitle:@"Caffinate" action:@selector(onCaffinateMenuItem:) keyEquivalent:@""];
+    [caffItem setTarget:self];
+    
+    [trayMenu addItem:[NSMenuItem separatorItem]];
+
     [[trayMenu addItemWithTitle:@"About" action:@selector(onAboutMenuItem:) keyEquivalent:@""] setTarget:self];
     [[trayMenu addItemWithTitle:@"Quit" action:@selector(quit:) keyEquivalent:@"q"] setTarget:self];
     
@@ -52,9 +59,9 @@
     
     // Update Icon
     float iconSize = [[NSStatusBar systemStatusBar] thickness] - 5;
-    NSImage * trayIcon = [NSImage imageNamed:@"TrayIcon"];
+    NSImage * trayIcon = [NSImage imageNamed:GKSystemService::isKeepingComputerAwake()? @"Caffee": @"TrayIcon"];
     [trayIcon setSize:CGSizeMake(iconSize, iconSize)];
-    if (!enabled) {
+    if (!GKSystemService::isKeepingComputerAwake() && !enabled) {
         trayIcon = [trayIcon copy];
         [trayIcon lockFocus];
         NSColor * tint = [NSColor colorWithCalibratedWhite:0.0 alpha:0.618];
@@ -74,6 +81,12 @@
     
     // Enable/Disable 'Reload'
     [reloadItem setEnabled:enabled];
+
+    // Caffinate
+    if (GKSystemService::isKeepingComputerAwake())
+        caffItem.state = NSControlStateValueOn;
+    else
+        caffItem.state = NSControlStateValueOff;
 }
 
 - (IBAction) onEnableMenuItem:(id)sender {
@@ -93,6 +106,15 @@
     gkApp.revealConfigFile();
 }
 
+- (IBAction) onCaffinateMenuItem:(id)sender {
+    if (GKSystemService::isKeepingComputerAwake())
+        GKSystemService::stopKeepingComputerAwake();
+    else
+        GKSystemService::keepComputerAwake();
+
+    [self syncGUI:self];
+}
+
 - (IBAction) onAboutMenuItem:(id)sender {
     GKSystemService::openUrl(GKAPP_URL);
 }
@@ -102,15 +124,7 @@
 }
 
 - (void)postMessage:(NSString *)message withTitle:(NSString *)title andIcon:(NSString *)icon{
-#if 0
-                NSUserNotification * notification = [[NSUserNotification alloc] init];
-                notification.title = title;
-                notification.informativeText = message;
-                notification.soundName = nil;//NSUserNotificationDefaultSoundName;
-                [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification: notification];
-#else
     [[ToastMessageWindow sharedInstance] postMessage:message withTitle:title andIcon:icon];
-    #endif
 }
 
 @end

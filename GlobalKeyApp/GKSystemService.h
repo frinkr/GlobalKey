@@ -54,4 +54,16 @@ namespace GKSystemService {
     bool
     isAutoRunRegistered();
 #endif
+
+#if GK_MAC
+    void
+    keepComputerAwake();
+
+    bool
+    isKeepingComputerAwake();
+
+    void
+    stopKeepingComputerAwake();
+    
+#endif
 }

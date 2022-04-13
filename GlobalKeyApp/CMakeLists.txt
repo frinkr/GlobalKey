@@ -42,7 +42,7 @@ else(APPLE)
     macOS/ToastMessageWindow.m
     macOS/Assets.xcassets
     )
-  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox -framework CoreAudio -framework QuartzCore")
+  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa -framework AppKit -framework Carbon -framework AudioToolbox -framework CoreAudio -framework QuartzCore -framework IOKit")
 endif()
 
 find_package(yaml-cpp CONFIG REQUIRED)

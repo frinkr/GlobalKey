@@ -2,6 +2,8 @@
 #import <AudioToolbox/AudioServices.h>
 #import <Carbon/Carbon.h>
 #import <CoreServices/CoreServices.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
+// #import <IOKit/pwr_mgt/IOPMLibPrivate.h>
 
 #include <cmath>
 #include <algorithm>
@@ -231,6 +233,44 @@ namespace GKSystemService {
     computerSleep() {
         SendAppleEventToSystemProcess(kAESleep);
     }
+
+    IOPMAssertionID sKeepAwakeAssertionID = 0;
+    
+    void
+    keepComputerAwake()
+    {
+        if (isKeepingComputerAwake())
+            return;
+        
+        IOReturn result = IOPMAssertionCreateWithDescription(
+                                                             kIOPMAssertPreventUserIdleSystemSleep,
+            CFSTR("Global Key"),
+            CFSTR("Global Key asserting forever"),
+            CFSTR("THE GLOBAL KEY IS PREVENTING SLEEP."),
+            CFSTR("/System/Library/CoreServices/powerd.bundle"),
+            (CFTimeInterval) 0,
+            kIOPMAssertionTimeoutActionRelease,
+            &sKeepAwakeAssertionID
+            );
+        if (kIOReturnSuccess != result)
+            sKeepAwakeAssertionID = 0;
+    }
+
+    bool
+    isKeepingComputerAwake()
+    {
+        return sKeepAwakeAssertionID != 0;
+    }
+
+    void
+    stopKeepingComputerAwake()
+    {
+        if (sKeepAwakeAssertionID) {
+            if (kIOReturnSuccess == IOPMAssertionRelease(sKeepAwakeAssertionID))
+                sKeepAwakeAssertionID = 0;
+        }
+    }
+
     
     std::string
     applicationSupportFolder() {
