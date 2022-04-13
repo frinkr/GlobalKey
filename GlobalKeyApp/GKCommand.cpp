@@ -52,6 +52,7 @@ GK_REGISTER_COMMNAND("mute", GKSystemCommand);
 GK_REGISTER_COMMNAND("open", GKSystemCommand);
 GK_REGISTER_COMMNAND("openurl", GKSystemCommand);
 GK_REGISTER_COMMNAND("lockscreen", GKSystemCommand);
+GK_REGISTER_COMMNAND("computersleep", GKSystemCommand);
 
 void
 GKSystemCommand::run(const std::string & cmd, const std::string & args) {
@@ -59,7 +60,7 @@ GKSystemCommand::run(const std::string & cmd, const std::string & args) {
         if (!args.empty()) {
             int value = std::stoi(args);
             GKSystemService::adjustVolume(value);
-        }
+        } 
     }
     else if (cmd == "mute") {
         if (GKSystemService::audioMuted())
@@ -81,6 +82,9 @@ GKSystemCommand::run(const std::string & cmd, const std::string & args) {
     }
     else if (cmd == "lockscreen") {
         GKSystemService::lockScreen();
+    }
+    else if (cmd == "computersleep") {
+        GKSystemService::computerSleep();
     }
 }
 

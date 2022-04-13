@@ -1,5 +1,8 @@
 #import <AppKit/AppKit.h>
 #import <AudioToolbox/AudioServices.h>
+#import <Carbon/Carbon.h>
+#import <CoreServices/CoreServices.h>
+
 #include <cmath>
 #include <algorithm>
 #include <dlfcn.h>
@@ -16,9 +19,47 @@ namespace {
     }
 
     std::string
-    toStdString(NSString * str) {
+        toStdString(NSString * str) {
         return std::string([str UTF8String]);
     }
+
+    OSStatus SendAppleEventToSystemProcess(AEEventID EventToSend) {
+        AEAddressDesc targetDesc;
+        static const ProcessSerialNumber kPSNOfSystemProcess = { 0, kSystemProcess };
+        AppleEvent eventReply = {typeNull, NULL};
+        AppleEvent appleEventToSend = {typeNull, NULL};
+
+        OSStatus error = noErr;
+
+        error = AECreateDesc(typeProcessSerialNumber, &kPSNOfSystemProcess, 
+                             sizeof(kPSNOfSystemProcess), &targetDesc);
+
+        if (error != noErr)
+            return(error);
+
+
+        error = AECreateAppleEvent(kCoreEventClass, EventToSend, &targetDesc, 
+                                   kAutoGenerateReturnID, kAnyTransactionID, &appleEventToSend);
+
+        AEDisposeDesc(&targetDesc);
+        if (error != noErr)
+
+            return(error);
+
+
+        error = AESend(&appleEventToSend, &eventReply, kAENoReply, 
+                       kAENormalPriority, kAEDefaultTimeout, NULL, NULL);
+
+        AEDisposeDesc(&appleEventToSend);
+        if (error != noErr)
+
+            return(error);
+
+
+        AEDisposeDesc(&eventReply);
+        return(error);
+    }
+    
 }
 
 namespace Audio {
@@ -64,7 +105,7 @@ namespace Audio {
     }
 
     template <typename T>
-        OSStatus getAudioProperty(AudioObjectPropertySelector property, T & value) {
+    OSStatus getAudioProperty(AudioObjectPropertySelector property, T & value) {
         AudioDeviceID outputDeviceID = defaultOutputDeviceID();
         if (outputDeviceID == kAudioObjectUnknown)
             return kAudioHardwareBadDeviceError;
@@ -184,6 +225,11 @@ namespace GKSystemService {
 
         if (SACLockScreenImmediate)
             SACLockScreenImmediate();
+    }
+
+    void
+    computerSleep() {
+        SendAppleEventToSystemProcess(kAESleep);
     }
     
     std::string

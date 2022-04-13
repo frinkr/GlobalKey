@@ -24,6 +24,9 @@ namespace GKSystemService {
 
     void
     lockScreen();
+
+    void
+    computerSleep();
     
     std::string
     applicationSupportFolder();
