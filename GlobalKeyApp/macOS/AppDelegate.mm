@@ -59,7 +59,7 @@
     
     // Update Icon
     float iconSize = [[NSStatusBar systemStatusBar] thickness] - 5;
-    NSImage * trayIcon = [NSImage imageNamed:GKSystemService::isKeepingComputerAwake()? @"Caffee": @"TrayIcon"];
+    NSImage * trayIcon = [NSImage imageNamed:GKSystemService::isKeepingComputerAwake()? @"Caffeinate": @"TrayIcon"];
     [trayIcon setSize:CGSizeMake(iconSize, iconSize)];
     if (!GKSystemService::isKeepingComputerAwake() && !enabled) {
         trayIcon = [trayIcon copy];
