@@ -86,6 +86,16 @@ GKCoreApp::invokeHotkey(GKHotkey::Ref hotkeyRef) {
 }
 
 void
+GKCoreApp::runCommand(const std::string & command) {
+    GKCommandEngine::instance().runCommand(command);
+}
+    
+const GKConfig::KeyMap &
+GKCoreApp::keyMap() const {
+    return config_.keyMap;
+}
+    
+void
 GKCoreApp::loadConfig() {
     auto p = configFilePath();
     configFilePath_ = p.u8string();
@@ -107,9 +117,9 @@ GKCoreApp::loadConfig() {
 
 void
 GKCoreApp::createHotkeys() {
-    for (auto & [key, cmd] : config_.keys) {
+    for (auto & [key, item] : config_.keyMap) {
         GKPtr<GKHotkey> hotkey = std::make_shared<GKHotkey>(key, config_.autoRepeat);
-        auto & command = cmd; // Fix clang
+        auto & command = item.command; // Fix clang
         hotkey->setHandler([&command]() {
             GKCommandEngine::instance().runCommand(command);
             });

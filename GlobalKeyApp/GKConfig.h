@@ -2,9 +2,17 @@
 #include <map>
 #include <string>
 
+#include "GKHotkey.h"
+
 struct GKConfig {
+    struct KeyMapItem {
+        std::string command;
+        std::string menu;
+    };
+    using KeyMap = std::map<GKKeySequence, KeyMapItem>;
+    
     bool autoRepeat {};
-    std::map<std::string, std::string> keys {};
+    KeyMap keyMap {};
 
     bool
     load(const std::string & path);

@@ -34,6 +34,12 @@ public:
     
     void
     invokeHotkey(GKHotkey::Ref hotkeyRef);
+
+    void
+    runCommand(const std::string & command);
+    
+    const GKConfig::KeyMap &
+    keyMap() const;
     
 #if GK_WIN
     void

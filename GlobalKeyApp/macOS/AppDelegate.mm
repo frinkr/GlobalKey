@@ -14,9 +14,12 @@
 @interface AppDelegate ()
 {
     NSStatusItem * tray;
+    NSMenu * trayMenu;
     NSMenuItem * enableItem;
     NSMenuItem * reloadItem;
     NSMenuItem * caffItem;
+    NSInteger dynamicMenuIndexStart;
+    NSMutableArray<NSMenuItem *> * dynamicMenuItems;
 }
 
 @end
@@ -26,7 +29,7 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     tray = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
     
-    NSMenu * trayMenu = [[NSMenu alloc] initWithTitle:@"Tray"];
+    trayMenu = [[NSMenu alloc] initWithTitle:@"Tray"];
     [trayMenu setAutoenablesItems:FALSE];
     
     tray.menu = trayMenu;
@@ -41,13 +44,15 @@
 
     caffItem = [trayMenu addItemWithTitle:@"Caffinate" action:@selector(onCaffinateMenuItem:) keyEquivalent:@""];
     [caffItem setTarget:self];
+
+    dynamicMenuIndexStart = trayMenu.numberOfItems;
     
     [trayMenu addItem:[NSMenuItem separatorItem]];
-
+    
     [[trayMenu addItemWithTitle:@"About" action:@selector(onAboutMenuItem:) keyEquivalent:@""] setTarget:self];
     [[trayMenu addItemWithTitle:@"Quit" action:@selector(quit:) keyEquivalent:@"q"] setTarget:self];
     
-    gkApp.reload(true);
+    [self reload:self];
     [self syncGUI:self];
 }
 
@@ -58,7 +63,7 @@
     BOOL enabled = gkApp.hotkeysRegistered();
     
     // Update Icon
-    float iconSize = [[NSStatusBar systemStatusBar] thickness] - 5;
+    float iconSize = [[NSStatusBar systemStatusBar] thickness] - 2;
     NSImage * trayIcon = [NSImage imageNamed:GKSystemService::isKeepingComputerAwake()? @"Caffeinate": @"TrayIcon"];
     [trayIcon setSize:CGSizeMake(iconSize, iconSize)];
     if (!GKSystemService::isKeepingComputerAwake() && !enabled) {
@@ -89,6 +94,57 @@
         caffItem.state = NSControlStateValueOff;
 }
 
+- (IBAction) reload:(id)sender {
+    gkApp.reload(true);
+    [self reloadDynamicMenuItems:sender];
+}
+
+- (IBAction) reloadDynamicMenuItems:(id)sender {
+    if (!dynamicMenuItems) {
+        dynamicMenuItems = [[NSMutableArray<NSMenuItem*> alloc] init];
+    }
+
+    // Remove exiting
+    for (NSMenuItem * menuItem in dynamicMenuItems) {
+        [trayMenu removeItem:menuItem];
+    }
+    
+    [dynamicMenuItems removeAllObjects];
+
+    NSInteger menuItemIndex = dynamicMenuIndexStart;
+    
+    for (auto & [key, item]: gkApp.keyMap()) {
+        if (item.menu.empty())
+            continue;
+        
+        NSMenuItem * menuItem =
+            [trayMenu insertItemWithTitle:[NSString stringWithUTF8String:item.menu.c_str()]
+                                   action:@selector(onDynamicMenuItem:)
+                            keyEquivalent:@""
+                                  atIndex:menuItemIndex];
+        [menuItem setTarget:self];
+
+        ++ menuItemIndex;
+        [dynamicMenuItems addObject:menuItem];
+    }
+}
+
+- (IBAction) onDynamicMenuItem:(id)sender {
+    NSUInteger menuIndex = [dynamicMenuItems indexOfObject:sender];
+    if (menuIndex != NSNotFound) {
+        NSUInteger index = 0;
+        for (auto & [key, item]: gkApp.keyMap()) {
+            if (item.menu.empty())
+                continue;
+            if (menuIndex == index) {
+                gkApp.runCommand(item.command);
+                return;
+            }
+            ++ index;
+        }
+    }
+}
+
 - (IBAction) onEnableMenuItem:(id)sender {
     if (gkApp.hotkeysRegistered())
         gkApp.unregisterHotkeys();
@@ -99,7 +155,7 @@
 }
 
 - (IBAction) onReloadMenuItem:(id)sender {
-    gkApp.reload(false);
+    [self reload:sender];
 }
 
 - (IBAction) onEditMenuItem:(id)sender {
