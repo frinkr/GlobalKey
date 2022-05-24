@@ -124,6 +124,20 @@
                                   atIndex:menuItemIndex];
         [menuItem setTarget:self];
 
+        if (auto keySeq = GKSplitKeySequence(key)) {
+            if (keySeq->first) {
+                NSEventModifierFlags modifierFlags {};
+                if (keySeq->first & kSHIFT) modifierFlags |= NSEventModifierFlagShift;
+                if (keySeq->first & kCTRL) modifierFlags |= NSEventModifierFlagControl;
+                if (keySeq->first & kALT) modifierFlags |= NSEventModifierFlagOption;
+                if (keySeq->first & kMETA) modifierFlags |= NSEventModifierFlagCommand;
+                [menuItem setKeyEquivalentModifierMask: NSEventModifierFlagShift | NSEventModifierFlagCommand];
+
+                if (!keySeq->second.empty())
+                    [menuItem setKeyEquivalent:[NSString stringWithUTF8String:keySeq->second.c_str()]];
+            }
+        }
+        
         ++ menuItemIndex;
         [dynamicMenuItems addObject:menuItem];
     }
