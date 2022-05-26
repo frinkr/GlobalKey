@@ -70,7 +70,7 @@ namespace Audio {
         AudioObjectPropertyAddress address;
         address.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
         address.mScope = kAudioObjectPropertyScopeGlobal;
-        address.mElement = kAudioObjectPropertyElementMaster;
+        address.mElement = kAudioObjectPropertyElementMain;
 	
         if (!AudioObjectHasProperty(kAudioObjectSystemObject, &address))
             return kAudioObjectUnknown;
@@ -93,7 +93,7 @@ namespace Audio {
         AudioObjectPropertyAddress address;
         address.mScope = kAudioDevicePropertyScopeOutput;
         address.mSelector = property;
-        address.mElement = kAudioObjectPropertyElementMaster;
+        address.mElement = kAudioObjectPropertyElementMain;
         if (!AudioObjectHasProperty(outputDeviceID, &address))
             return kAudioHardwareUnknownPropertyError;
 
@@ -115,7 +115,7 @@ namespace Audio {
         AudioObjectPropertyAddress address;
         address.mSelector = property;
         address.mScope = kAudioDevicePropertyScopeOutput;
-        address.mElement = kAudioObjectPropertyElementMaster;
+        address.mElement = kAudioObjectPropertyElementMain;
         if (!AudioObjectHasProperty(outputDeviceID, &address))
             return kAudioHardwareUnknownPropertyError;
 
@@ -125,7 +125,7 @@ namespace Audio {
 
     float getVolume() {
         Float32 outputVolume;
-        OSStatus status = getAudioProperty(kAudioHardwareServiceDeviceProperty_VirtualMasterVolume, outputVolume);
+        OSStatus status = getAudioProperty(kAudioHardwareServiceDeviceProperty_VirtualMainVolume, outputVolume);
         if (status)
             return 0.0;
         if (outputVolume < 0.0 || outputVolume > 1.0)
@@ -154,7 +154,7 @@ namespace Audio {
     void setVolume(Float32 newVolume) {
         if (newVolume < 0.0 || newVolume > 1.0)
             return;
-        setAudioProperty<Float32>(kAudioHardwareServiceDeviceProperty_VirtualMasterVolume, newVolume);
+        setAudioProperty<Float32>(kAudioHardwareServiceDeviceProperty_VirtualMainVolume, newVolume);
         if (newVolume < 0.001)
             mute();
         else
