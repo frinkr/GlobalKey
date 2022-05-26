@@ -1,12 +1,10 @@
 #include <filesystem>
 #include <fstream>
 
-#include "json.hpp"
 #include "GKConfig.h"
 #include "GKCommand.h"
 #include "GKCoreApp.h"
 #include "GKSystemService.h"
-using json = nlohmann::json;
 
 namespace {
     std::filesystem::path
