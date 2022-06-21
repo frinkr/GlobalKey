@@ -16,7 +16,6 @@ set(SOURCES
   GKCommand.h
   GKCommand.cpp
   GKSystemService.h
-  json.hpp
   )
 
 if (WIN32)
