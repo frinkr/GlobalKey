@@ -139,6 +139,9 @@ namespace GKSystemService {
         LockWorkStation();
     }
     
+    void computerSleep()
+    {}
+
     extern "C" void PostNotificationWinImp(LPCWSTR pTitle, LPCWSTR pMessage, LPCWSTR pIconName);
 
     void

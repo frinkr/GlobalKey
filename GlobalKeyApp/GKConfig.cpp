@@ -16,7 +16,7 @@ GKConfig::sample() {
         GKConfig config;
         config.autoRepeat = true;
 #if GK_WIN
-        config.keys = {
+        config.keyMap = {
             { "F1", {"toggle WindowsTerminal.exe"} },
             { "F2", {"toggle devenv.exe"} },
             { "CTRL+DOWN", {"volume -5"} },

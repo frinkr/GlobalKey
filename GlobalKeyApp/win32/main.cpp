@@ -217,8 +217,8 @@ LRESULT CALLBACK WndProcMain(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPa
         ShowWindow(s_hNotifWnd, SW_HIDE);
         break;
     default:
-        if(uMessage == s_uTaskbarRestart)
-            return AddTrayIcon();
+        if (uMessage == s_uTaskbarRestart)
+            ;// return AddTrayIcon();
         break;
     }
     return DefWindowProc(hWnd, uMessage, wParam, lParam);
