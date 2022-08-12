@@ -18,7 +18,7 @@ if not app_desc:
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Wnck', '3.0')
-from gi.repository import Gtk, Wnck
+from gi.repository import Gtk, Wnck, GdkX11, Gdk
 
 Gtk.init([])
 
@@ -35,16 +35,18 @@ for window in screen.get_windows():
     cmd = proc.cmdline()
     if len(cmd) == 0:
         continue
-    
+
+    now = GdkX11.x11_get_server_time(Gdk.get_default_root_window())
+
     prog = cmd[0]
     if app_desc in prog:
         if window.is_minimized():
-            window.activate(0)
+            window.activate(now)
         else:
             if window.is_active():
                 window.minimize()
             else:
-                window.activate(0)
+                window.activate(now)
         sys.exit(0)
 
 
