@@ -25,29 +25,34 @@ Gtk.init([])
 screen = Wnck.Screen.get_default()
 screen.force_update()
 
-for window in screen.get_windows():
-    app = window.get_application()
+def match_app(app, app_desc):
     pid = app.get_pid()
     if pid == 0:
-        continue
+        return app_desc in app.get_name()
 
     proc = psutil.Process(pid)
     cmd = proc.cmdline()
     if len(cmd) == 0:
+        return False
+
+    prog = cmd[0]
+    return app_desc in prog
+
+
+for window in screen.get_windows():
+    app = window.get_application()
+    if not match_app(app, app_desc):
         continue
 
     now = GdkX11.x11_get_server_time(Gdk.get_default_root_window())
-
-    prog = cmd[0]
-    if app_desc in prog:
-        if window.is_minimized():
-            window.activate(now)
+    if window.is_minimized():
+        window.activate(now)
+    else:
+        if window.is_active():
+            window.minimize()
         else:
-            if window.is_active():
-                window.minimize()
-            else:
-                window.activate(now)
-        sys.exit(0)
+            window.activate(now)
+    sys.exit(0)
 
 
 # window not found, launch the app
